@@ -32,6 +32,56 @@ namespace WireFormSketch
         public Form1()
         {
             InitializeComponent();
+
+            gateRegistries = new List<GateFitnessFunc>()
+            {
+                AndGate,
+                NotGate,
+                OrGate
+            };
+        }
+
+        VectorOfPoint andTemplate = new VectorOfPoint(new Point[] { 
+            new Point(0, 0),
+            new Point(75, 20),
+            new Point(100, 50),
+            new Point(75, 80),
+            new Point(0, 100),
+        });
+        private List<(GateEnum gate, double fitness)> AndGate(VectorOfPoint contour, Rectangle boundingRect, MCvPoint2D64f centroid)
+        {
+            double fitness = CvInvoke.MatchShapes(contour, andTemplate, ContoursMatchType.I1);
+            return new List<(GateEnum gate, double fitness)>() { (GateEnum.And, fitness) };
+        }
+
+        VectorOfPoint orTemplate = new VectorOfPoint(new Point[] {
+            new Point(0, 0),
+            new Point(75, 20),
+            new Point(100, 50),
+            new Point(75, 80),
+            new Point(0, 100),
+            new Point(10, 50),
+        });
+        private List<(GateEnum gate, double fitness)> OrGate(VectorOfPoint contour, Rectangle boundingRect, MCvPoint2D64f centroid)
+        {
+            double fitness = CvInvoke.MatchShapes(contour, orTemplate, ContoursMatchType.I1, 100);
+            return new List<(GateEnum gate, double fitness)>() { (GateEnum.Or, fitness) };
+        }
+
+
+        VectorOfPoint notTemplate = new VectorOfPoint(new Point[] {
+            new Point(0, 0),
+            new Point(75, 50),
+            new Point(90, 40),
+            new Point(100, 50),
+            new Point(100, 60),
+            new Point(75, 50),
+            new Point(0, 100),
+        });
+        private List<(GateEnum gate, double fitness)> NotGate(VectorOfPoint contour, Rectangle boundingRect, MCvPoint2D64f centroid)
+        {
+            double fitness = CvInvoke.MatchShapes(contour, notTemplate, ContoursMatchType.I1);
+            return new List<(GateEnum gate, double fitness)>() { (GateEnum.Not, fitness) };
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -98,6 +148,7 @@ namespace WireFormSketch
 
             //a mask with only the document contour on the frame.
             using Mat documentOnlyMask = new Mat(frame.Size, DepthType.Cv8U, 1);
+            documentOnlyMask.SetTo(new MCvScalar());
             CvInvoke.FillPoly(documentOnlyMask, documentContour, new MCvScalar(255, 255, 255));
 
             double docALen = CvInvoke.ArcLength(documentContour, true);
@@ -110,25 +161,27 @@ namespace WireFormSketch
 
             PointF[] initialDoc = new PointF[] { tL, tR, bL, bR };
 
-            //PointF[] transformedDoc = new PointF[]
+            ////transformation with 10 pixel padding
+            //PointF[] extendedDoc = new PointF[]
             //{
             //    new PointF(-10        , -10),
             //    new PointF(docWidth+10, -10),
             //    new PointF(-10        , docHeight+10),
             //    new PointF(docWidth+10, docHeight+10)
             //};
+            //perfect transformation
             PointF[] transformedDoc = new PointF[]
             {
-                new PointF(0        , 0),
+                new PointF(0       , 0),
                 new PointF(docWidth, 0),
-                new PointF(0        , docHeight+0),
-                new PointF(docWidth, docHeight+0)
+                new PointF(0       , docHeight),
+                new PointF(docWidth, docHeight)
             };
             using Mat transformation = CvInvoke.GetPerspectiveTransform(initialDoc, transformedDoc);
 
-            using Mat document = new Mat();
-            CvInvoke.WarpPerspective(frame, document, transformation, new Size(docWidth, docHeight));
-
+            using Mat docUnTrimmed = new Mat();
+            CvInvoke.WarpPerspective(frame, docUnTrimmed, transformation, new Size(docWidth, docHeight));
+            using Mat document = new Mat(docUnTrimmed, new Rectangle(docMargin, docMargin, docUnTrimmed.Width - 2 * docMargin, docUnTrimmed.Height - 2 * docMargin));
 
             //print bounds of document for debugging
             CvInvoke.Line(frame, tL, tR, new MCvScalar(0, 255, 0), 3);
@@ -161,18 +214,18 @@ namespace WireFormSketch
 
             using VectorOfVectorOfPoint gateContours = new VectorOfVectorOfPoint();
             using Mat h2 = new Mat();
-            CvInvoke.FindContours(documentMask, frameContours, h2, RetrType.External, ChainApproxMethod.ChainApproxSimple);
+            CvInvoke.FindContours(docGateMask, gateContours, h2, RetrType.External, ChainApproxMethod.ChainApproxSimple);
 
-            if (frameContours.Size == 0)
+            if (gateContours.Size == 0)
             {
                 SetImageBox(imageBox2, docGateMask);
                 SetImageBox(imageBox1, frame);
                 return;
             }
-            CvInvoke.PutText(document, "test text", new Point(10, 100), FontFace.HersheySimplex, 3, new MCvScalar(0, 255, 0), 3);
+            //CvInvoke.PutText(document, "test text", new Point(10, 100), FontFace.HersheySimplex, 3, new MCvScalar(0, 255, 0), 3);
             for (int i = 0; i < gateContours.Size; i++)
             {
-                VectorOfPoint contour = frameContours[i];
+                VectorOfPoint contour = gateContours[i];
                 Rectangle rect = CvInvoke.BoundingRectangle(contour);
                 Moments moments = CvInvoke.Moments(contour);
                 MCvPoint2D64f centroid = moments.GravityCenter;
@@ -181,18 +234,19 @@ namespace WireFormSketch
 
                 var maxFitness = pairs.Aggregate((x, acc) => x.fitness > acc.fitness ? x : acc);
 
-                CvInvoke.PutText(document, "test text", new Point(0, 0), FontFace.HersheySimplex, 2, new MCvScalar(0, 255, 0), 3);
+                CvInvoke.Rectangle(document, rect, new MCvScalar(), 3);
+                CvInvoke.PutText(document, maxFitness.gate.ToString(), new Point((int)centroid.X, (int)centroid.Y), FontFace.HersheySimplex, 2, new MCvScalar(0, 255, 0), 3);
 
 
             }
 
             using Mat documentUnWarped = new Mat(frame.Size, frame.Depth, frame.NumberOfChannels);
-            CvInvoke.WarpPerspective(document, documentUnWarped, transformation, frame.Size, warpType: Warp.InverseMap);
+            CvInvoke.WarpPerspective(docUnTrimmed, documentUnWarped, transformation, frame.Size, warpType: Warp.InverseMap);
 
             documentUnWarped.CopyTo(frame, documentOnlyMask);
 
 
-            SetImageBox(imageBox2, documentOnlyMask);
+            SetImageBox(imageBox2, document);
             SetImageBox(imageBox1, frame);
         }
 
