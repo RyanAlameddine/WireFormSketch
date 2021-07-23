@@ -10,7 +10,7 @@ namespace WireFormSketch
 {
     static class Extensions
     {
-        public static (Point topLeft, Point topRight, Point bottomLeft, Point bottomRight) GetCornerPoints(this VectorOfPoint contour, int imWidth, int imHeight)
+        public static (Point topLeft, Point topRight, Point bottomLeft, Point bottomRight) GetCornerPoints(this VectorOfPoint contour)
         {
             Point topLeft;
             Point topRight;
@@ -21,7 +21,7 @@ namespace WireFormSketch
             //split to left and right edges by X coordinate (because paper is assumed to be horizontal)
             //this will solve problem of the paper being oriented toward a corner 
             //(a case which makes distance from corner not work as a valid metric)
-            Comparison<Point> comparison = (p1, p2) => p1.X.CompareTo(p2.X);
+            static int comparison(Point p1, Point p2) => p1.X.CompareTo(p2.X);
             Array.Sort(points, comparison);
 
             var lefts = points.Take(points.Length / 2);

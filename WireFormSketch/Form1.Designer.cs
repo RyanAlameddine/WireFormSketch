@@ -35,10 +35,12 @@ namespace WireFormSketch
             this.imageBox2 = new Emgu.CV.UI.ImageBox();
             this.ValueLowerBound = new System.Windows.Forms.TrackBar();
             this.ValueUpperBound = new System.Windows.Forms.TrackBar();
+            this.imageBox3 = new Emgu.CV.UI.ImageBox();
             ((System.ComponentModel.ISupportInitialize)(this.imageBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.imageBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ValueLowerBound)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ValueUpperBound)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.imageBox3)).BeginInit();
             this.SuspendLayout();
             // 
             // imageBox1
@@ -85,11 +87,20 @@ namespace WireFormSketch
             this.ValueUpperBound.TabIndex = 5;
             this.ValueUpperBound.Value = 130;
             // 
+            // imageBox3
+            // 
+            this.imageBox3.Location = new System.Drawing.Point(168, 422);
+            this.imageBox3.Name = "imageBox3";
+            this.imageBox3.Size = new System.Drawing.Size(374, 183);
+            this.imageBox3.TabIndex = 2;
+            this.imageBox3.TabStop = false;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1325, 658);
+            this.Controls.Add(this.imageBox3);
             this.Controls.Add(this.ValueUpperBound);
             this.Controls.Add(this.ValueLowerBound);
             this.Controls.Add(this.imageBox2);
@@ -103,6 +114,7 @@ namespace WireFormSketch
             ((System.ComponentModel.ISupportInitialize)(this.imageBox2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ValueLowerBound)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ValueUpperBound)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.imageBox3)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -115,6 +127,7 @@ namespace WireFormSketch
         private System.Windows.Forms.TrackBar ValueLowerBound;
         private Emgu.CV.UI.ImageBox imageBox2;
         private System.Windows.Forms.TrackBar ValueUpperBound;
+        private Emgu.CV.UI.ImageBox imageBox3;
     }
 }
 
