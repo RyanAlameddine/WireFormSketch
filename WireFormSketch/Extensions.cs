@@ -10,14 +10,13 @@ namespace WireFormSketch
 {
     static class Extensions
     {
-        public static (Point topLeft, Point topRight, Point bottomLeft, Point bottomRight) GetCornerPoints(this VectorOfPoint contour)
+        public static (Point topLeft, Point topRight, Point bottomLeft, Point bottomRight) GetCornerPoints(this Point[] points)
         {
             Point topLeft;
             Point topRight;
             Point bottomLeft;
             Point bottomRight;
 
-            Point[] points = contour.ToArray();
             //split to left and right edges by X coordinate (because paper is assumed to be horizontal)
             //this will solve problem of the paper being oriented toward a corner 
             //(a case which makes distance from corner not work as a valid metric)

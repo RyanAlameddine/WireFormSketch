@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <LangVersion>9</LangVersion>
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
@@ -17,6 +18,7 @@
   <ItemGroup>
     <PackageReference Include="Emgu.CV.runtime.windows" Version="4.5.2.4673" />
     <PackageReference Include="Emgu.CV.UI" Version="4.5.2.4673" />
+    <PackageReference Include="OneOf" Version="3.0.190" />
   </ItemGroup>
 
 </Project>

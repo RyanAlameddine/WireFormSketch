@@ -31,7 +31,7 @@ namespace WireFormSketch
         {
             this.components = new System.ComponentModel.Container();
             this.imageBox1 = new Emgu.CV.UI.ImageBox();
-            this.button1 = new System.Windows.Forms.Button();
+            this.CaptureButton = new System.Windows.Forms.Button();
             this.imageBox2 = new Emgu.CV.UI.ImageBox();
             this.ValueLowerBound = new System.Windows.Forms.TrackBar();
             this.ValueUpperBound = new System.Windows.Forms.TrackBar();
@@ -51,15 +51,15 @@ namespace WireFormSketch
             this.imageBox1.TabIndex = 2;
             this.imageBox1.TabStop = false;
             // 
-            // button1
+            // CaptureButton
             // 
-            this.button1.Location = new System.Drawing.Point(0, 0);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(94, 29);
-            this.button1.TabIndex = 3;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.CaptureButton.Location = new System.Drawing.Point(12, 21);
+            this.CaptureButton.Name = "CaptureButton";
+            this.CaptureButton.Size = new System.Drawing.Size(94, 29);
+            this.CaptureButton.TabIndex = 3;
+            this.CaptureButton.Text = "Capture";
+            this.CaptureButton.UseVisualStyleBackColor = true;
+            this.CaptureButton.Click += new System.EventHandler(this.CaptureButton_Click);
             // 
             // imageBox2
             // 
@@ -104,7 +104,7 @@ namespace WireFormSketch
             this.Controls.Add(this.ValueUpperBound);
             this.Controls.Add(this.ValueLowerBound);
             this.Controls.Add(this.imageBox2);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.CaptureButton);
             this.Controls.Add(this.imageBox1);
             this.Location = new System.Drawing.Point(0, 150);
             this.Name = "Form1";
@@ -123,7 +123,7 @@ namespace WireFormSketch
         #endregion
 
         private Emgu.CV.UI.ImageBox imageBox1;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button CaptureButton;
         private System.Windows.Forms.TrackBar ValueLowerBound;
         private Emgu.CV.UI.ImageBox imageBox2;
         private System.Windows.Forms.TrackBar ValueUpperBound;
