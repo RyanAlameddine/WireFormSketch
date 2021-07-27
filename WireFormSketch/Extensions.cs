@@ -1,4 +1,5 @@
 ﻿using Emgu.CV;
+using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using System;
 using System.Collections.Generic;
@@ -69,9 +70,23 @@ namespace WireFormSketch
             return Math.Pow(point.X - other.X, 2) + Math.Pow(point.Y - other.Y, 2);
         }
 
+        public static double DistanceSqr(this MCvPoint2D64f point, MCvPoint2D64f other)
+        {
+            return Math.Pow(point.X - other.X, 2) + Math.Pow(point.Y - other.Y, 2);
+        }
+
         public static Point Add(this Point point, Point other)
         {
             return new Point(point.X + other.X, point.Y + other.Y);
+        }
+
+        public static Rectangle Union(this Rectangle r1, Rectangle r2) {
+            int x = Math.Min(r1.X, r2.X);
+            int y = Math.Min(r1.Y, r2.Y);
+            int xT = Math.Max(r1.X + r1.Width, r2.X + r2.Width); 
+            int yT = Math.Max(r1.Y + r1.Height, r2.Y + r2.Height);
+
+            return new Rectangle(x, y, xT - x, yT - y);
         }
     }
 }

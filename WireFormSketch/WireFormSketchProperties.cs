@@ -23,11 +23,6 @@ namespace WireFormSketch
         public int DocMargin { get; init; } = 10;
 
         /// <summary>
-        /// the amount of dilation to happen on the detected gate contours
-        /// </summary>
-        public int GateDilationCount { get; init; } = 1;
-
-        /// <summary>
         /// The epsilon value for the approximation of the document contour in frame.
         /// </summary>
         public double DocumentApproxEpsilon { get; init; } = .02;
@@ -51,5 +46,27 @@ namespace WireFormSketch
         /// The upper bound for lightness of pixel before it is considered a gate pixel.
         /// </summary>
         public double GateThreshold { get; init; } = 110;
+
+
+
+        /// <summary>
+        /// the amount of dilation to happen on the detected gate contours
+        /// </summary>
+        public int GateDilationCount { get; init; } = 1;
+
+        /// <summary>
+        /// The epsilon value for the approximation of the gate contours in document.
+        /// </summary>
+        public double GateApproxEpsilon { get; init; } = .04;
+
+        /// <summary>
+        /// The minimum percent area for a child contour of a gate to be considered a child and not just noise.
+        /// </summary>
+        public double GateChildMinAreaPercent { get; init; } = .005;
+
+        /// <summary>
+        /// true if the gate children should be drawn to the screen.
+        /// </summary>
+        public bool DrawGateChildren { get; init; } = true;
     }
 }

@@ -11,14 +11,6 @@ using System.Windows.Forms;
 
 namespace WireFormSketch
 {
-    enum GateEnum
-    {
-        And,
-        Or,
-        Not
-    }
-
-
     public partial class Form1 : Form
     {
         VideoCapture capture;

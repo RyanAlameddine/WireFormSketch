@@ -11,72 +11,70 @@ using System.Text;
 
 namespace WireFormSketch
 {
-    /// <summary>
-    /// Stores the data and Mats of the document loaded by WireFormSketch.FindDocument
-    /// </summary>
-    public readonly struct DocumentData : IDisposable
-    {
-        /// <summary>
-        /// The document Mat, untrimmed.
-        /// </summary>
-        public readonly Mat D_Untrimmed;
-        /// <summary>
-        /// The document Mat.
-        /// </summary>
-        public readonly Mat Document;
-        /// <summary>
-        /// The mask of the document on the original frame mat.
-        /// </summary>
-        public readonly Mat F_DocumentMask;
-        /// <summary>
-        /// The perspective transformation of the document performed on the original mat to get DocumentUnTrimmed.
-        /// </summary>
-        public readonly Mat F_Transformation;
-
-        public DocumentData(Mat document, Mat d_Untrimmed, Mat f_DocumentMask, Mat f_Transformation)
-        {
-            Document = document;
-            D_Untrimmed = d_Untrimmed;
-            F_DocumentMask = f_DocumentMask;
-            F_Transformation = f_Transformation;
-        }
-
-        //public void Deconstruct(out Mat document, out Mat f_DocumentMask, out Mat f_Transformation)
-        //{
-        //    document = Document;
-        //    f_DocumentMask = F_DocumentMask;
-        //    f_Transformation = F_Transformation;
-        //}
-
-        public void Dispose()
-        {
-            Document.Dispose();
-            D_Untrimmed.Dispose();
-            F_DocumentMask.Dispose();
-            F_Transformation.Dispose();
-        }
-    }
-
     public class WireFormSketch
     {
         public readonly WireFormSketchProperties Props;
         public WireFormSketch(WireFormSketchProperties properties)
         {
             Props = properties;
-            gateRegistries = new List<GateFitnessFunc>()
-            {
-                AndGate,
-                NotGate,
-                OrGate
-            };
+            //gateRegistries = new List<GateFitnessFunc>()
+            //{
+            //    AndGate,
+            //    NotGate,
+            //    OrGate
+            //};
         }
+
+
+        List<(GateTraits gate, ContourData contourData)> gateRecord = new List<(GateTraits gate, ContourData contourData)>();
+
+        /// <summary>
+        /// The main function of this library. 
+        /// Takes in an image representing the current frame to process and draw gates and wires drawn onto.
+        /// </summary>
+        /// <param name="frame">The current input from the camera (or image loaded in)</param>
+        /// <param name="readGates">Whether or not gates should be read on this frame.</param>
+        public string ProcessFrame(Mat frame, bool readGates)
+        {
+
+            var docRet = FindDocument(frame);
+
+            if (docRet.IsT0) return docRet.AsT0; //if error message, return error
+            using DocumentData doc = docRet.AsT1; //get document data
+            //(Mat document, Mat f_DocumentMask, Mat f_Transformation) = documentData;
+
+
+            if (readGates)
+            {
+                var gateRet = FindGates(doc);
+                if (gateRet.IsT0) return gateRet.AsT0; //if get error message, return error
+                gateRecord = gateRet.AsT1; //record gate data
+            }
+
+            foreach (var gate in gateRecord)
+            {
+                CvInvoke.Rectangle(doc.Document, gate.contourData.boundingRect, new MCvScalar(), 3);
+                CvInvoke.PutText(doc.Document, gate.gate.ToString(), new Point((int)gate.contourData.centroid.X, (int)gate.contourData.centroid.Y), FontFace.HersheySimplex, 1, new MCvScalar(0, 0, 255), 3);
+            }
+
+
+            using Mat documentUnWarped = new Mat(frame.Size, frame.Depth, frame.NumberOfChannels);
+            CvInvoke.WarpPerspective(doc.D_Untrimmed, documentUnWarped, doc.F_Transformation, frame.Size, warpType: Warp.InverseMap);
+
+            documentUnWarped.CopyTo(frame, doc.F_DocumentMask);
+
+            return null;
+        }
+
+
+
 
 
 
         /// <summary>
         /// Finds a white, landscape, rectangular document within the input image.
         /// </summary>
-        /// <returns>DocumentData if success, string with error message if failure.</returns>
+        /// <returns><see cref="DocumentData"/> if success, string with error message if failure.</returns>
         private OneOf<string, DocumentData> FindDocument(Mat frame)
         {
             if (frame is null) return "Inputted frame was null";
@@ -144,10 +142,10 @@ namespace WireFormSketch
             if(Props.DocumentOutlineColor is not null)
             {
                 var color = Props.DocumentOutlineColor.Value;
-                CvInvoke.Line(frame, tL, tR, color, 3);
-                CvInvoke.Line(frame, tR, bR, color, 3);
-                CvInvoke.Line(frame, bR, bL, color, 3);
-                CvInvoke.Line(frame, bL, tL, color, 3);
+                //CvInvoke.Line(frame, tL, tR, color, 3);
+                //CvInvoke.Line(frame, tR, bR, color, 3);
+                //CvInvoke.Line(frame, bR, bL, color, 3);
+                //CvInvoke.Line(frame, bL, tL, color, 3);
 
                 CvInvoke.PutText(frame, $"Document has {f_documentContour.Size} verticies!", new Point(10, 10), FontFace.HersheyPlain, 1, color);
             }
@@ -161,8 +159,10 @@ namespace WireFormSketch
             return new DocumentData(document, d_untrimmed, f_documentOnlyMask, f_transformation);
         }
 
-
-        private OneOf<string, List<(GateEnum gate, ContourData contourData)>> FindGates(DocumentData doc)
+        /// <summary>
+        /// Reads the gates from the loaded document.
+        /// </summary>
+        private OneOf<string, List<(GateTraits gate, ContourData contourData)>> FindGates(DocumentData doc)
         {
             //find the gates using a threshold
             using Mat d_Gray = new Mat();
@@ -184,11 +184,13 @@ namespace WireFormSketch
             if (d_gateContours.Size == 0) return "No Gate contours found";
 
             //now that we have found each gate contour, loop through them and process and register each one
-            List<(GateEnum gate, ContourData contourData)> gates = new List<(GateEnum gate, ContourData contourData)>();
+            List<(GateTraits gate, ContourData contourData)> gates = new List<(GateTraits gate, ContourData contourData)>();
+            List<ContourData> modifiers = new List<ContourData>(); //things that aren't gates (like xor bars)
+            
             for (int i = 0; i != -1; i = d_hierarchy[i, 0])
             {
                 //load contour data from contour and hierarchy
-                ContourData contourData = ContourData.From(d_gateContours, i, d_hierarchy);
+                ContourData contourData = ContourData.From(d_gateContours, i, d_hierarchy, Props);
 
 
                 //if it is on the edge (might be a border problem with the paper itself).
@@ -198,117 +200,92 @@ namespace WireFormSketch
                     continue;
                 }
 
+                //if it is a modifier:
+                if (contourData.children.Count == 0)
+                {
+                    modifiers.Add(contourData);
+                    continue;
+                }
 
-                //run fitness func on each gate
-                var pairs = gateRegistries.SelectMany(func => func(contourData));
+                //draw children for debugging.
+                if (Props.DrawGateChildren)
+                {
+                    int j = 1;
+                    foreach (var child in contourData.children)
+                    {
+                        CvInvoke.Polylines(doc.Document, child.contour, true, new MCvScalar(255 / j, 0, 0), 2);
+                        j++;
+                    }
+                }
 
-                //select highest fitness value
-                var (gate, fitness) = pairs.Aggregate((x, acc) => x.fitness > acc.fitness ? x : acc);
+                gates.Add((GetTraits(contourData), contourData));
+            }
 
-                //add gate to registry
-                gates.Add((gate, contourData));
+            //check modifiers and link them to their respective gates:
+            foreach(var modifier in modifiers)
+            {
+                bool isXorBar = modifier.boundingRect.Height > 2 * modifier.boundingRect.Width;
+                if (!isXorBar) continue;
+
+                //a point that should be near the centroid of the gate to link it to. For example:
+                //|  |- - -\
+                //|  | x o |    (x is the linker point, o is the centroid of the contour
+                //|  |- - -/
+                
+                Point linkerPoint = new Point((int) (modifier.centroid.X + modifier.boundingRect.Height), (int)modifier.centroid.Y);
+
+                //the maximum allowed distance from the linker point
+                double maxDistSqr = modifier.boundingRect.Height * modifier.boundingRect.Height;
+
+                //find the centroid of the gate that is closest to our linker point
+                double minDistSqr = double.MaxValue;
+                int minDistIndex = -1;
+                for(int i = 0; i < gates.Count; i++)
+                {
+                    (GateTraits gate, ContourData contourData) = gates[i];
+
+                    double distSqr = contourData.centroid.DistanceSqr(modifier.centroid);
+                    if (distSqr > maxDistSqr || gate.HasFlag(GateTraits.XorBar)) continue;
+
+                    if(distSqr < minDistSqr)
+                    {
+                        minDistSqr = distSqr;
+                        minDistIndex = i;
+                    }
+                }
+
+                if(minDistIndex == -1)
+                {
+                    CvInvoke.Polylines(doc.Document, modifier.contour, true, new MCvScalar(0, 0, 255), 3);
+                    continue;
+                }
+
+                //add xor flag and update bounding rect
+                (GateTraits minGate, ContourData minCont) = gates[minDistIndex];
+
+                Rectangle unionedRect = minCont.boundingRect.Union(modifier.boundingRect);
+
+                gates[minDistIndex] = (minGate | GateTraits.XorBar, new ContourData(minCont.contour, minCont.approxC, unionedRect, minCont.children, minCont.centroid, minCont.arcLength, minCont.leftEdge));
+            
             }
 
             return gates;
         }
 
-
-
-
-
-        List<(GateEnum gate, ContourData contourData)> gateRecord = new List<(GateEnum gate, ContourData contourData)>();
-
         /// <summary>
-        /// The main function of this library. 
-        /// Takes in an image representing the current frame to process and draw gates and wires drawn onto.
+        /// Matches the gate traits of the specified gate contour data.
         /// </summary>
-        /// <param name="frame">The current input from the camera (or image loaded in)</param>
-        /// <param name="readGates">Whether or not gates should be read on this frame.</param>
-        public string ProcessFrame(Mat frame, bool readGates)
+        private GateTraits GetTraits(ContourData contourData)
         {
+            GateTraits traits = GateTraits.NoTraits;
+            if (contourData.children.Count == 0) return traits;
+            if (contourData.children.Count == 1) traits |= GateTraits.NotDotted;
+            if (contourData.children.Count == 2) traits |= GateTraits.Dotted;
+            if (contourData.leftEdge.Count() == 2) traits |= GateTraits.FlatLeftEdge;
+            if (contourData.children.Min.approxC.Length == 3) traits |= GateTraits.FirstChildTriangular;
+            //XOrBar is added by modifier handler
 
-            var docRet = FindDocument(frame);
-
-            if (docRet.IsT0) return docRet.AsT0; //if error message, return error
-            using DocumentData doc = docRet.AsT1; //get document data
-            //(Mat document, Mat f_DocumentMask, Mat f_Transformation) = documentData;
-
-
-            if (readGates)
-            {
-                var gateRet = FindGates(doc);
-                if (gateRet.IsT0) return gateRet.AsT0; //if get error message, return error
-                gateRecord = gateRet.AsT1; //record gate data
-            }
-
-            foreach (var gate in gateRecord)
-            {
-                CvInvoke.Rectangle(doc.Document, gate.contourData.boundingRect, new MCvScalar(), 3);
-                CvInvoke.PutText(doc.Document, gate.gate.ToString(), new Point((int)gate.contourData.centroid.X, (int)gate.contourData.centroid.Y), FontFace.HersheySimplex, 2, new MCvScalar(0, 0, 255), 3);
-            }
-
-
-            using Mat documentUnWarped = new Mat(frame.Size, frame.Depth, frame.NumberOfChannels);
-            CvInvoke.WarpPerspective(doc.D_Untrimmed, documentUnWarped, doc.F_Transformation, frame.Size, warpType: Warp.InverseMap);
-
-            documentUnWarped.CopyTo(frame, doc.F_DocumentMask);
-
-
-            //SetImageBox(imageBox2, docGateMask);
-            //SetImageBox(imageBox1, frame);
-            return null;
-        }
-
-
-
-
-        delegate List<(GateEnum gate, double fitness)> GateFitnessFunc(ContourData data);
-
-        readonly List<GateFitnessFunc> gateRegistries;
-
-        private List<(GateEnum gate, double fitness)> AndGate(ContourData data)
-        {
-            double fitness = 0;
-            if (data.leftEdge.Count() == 2) //flat left edge
-            {
-                fitness++;
-            }
-
-            if (data.approxC.Length == 4) //four points
-            {
-                fitness++;
-
-                //get corner points
-                (Point topLeft, Point topRight, Point bottomLeft, Point bottomRight) = data.approxC.GetCornerPoints();
-
-                //if has curved front shape
-                if (topLeft.Y < topRight.Y) fitness++;
-                if (bottomLeft.Y > bottomRight.Y) fitness++;
-            }
-
-
-            return new List<(GateEnum gate, double fitness)>() { (GateEnum.And, fitness) };
-        }
-
-        private List<(GateEnum gate, double fitness)> OrGate(ContourData data)
-        {
-            double fitness = 0;
-            if (data.leftEdge.Count() >= 3) //not flat left edge
-            {
-                fitness += 4;
-            }
-            return new List<(GateEnum gate, double fitness)>() { (GateEnum.Or, fitness) };
-        }
-
-        private List<(GateEnum gate, double fitness)> NotGate(ContourData data)
-        {
-            double fitness = 0;
-            if (data.leftEdge.Count() == 2 && data.children >= 2) //flat left edge
-            {
-                fitness = 100;
-            }
-
-            return new List<(GateEnum gate, double fitness)>() { (GateEnum.Not, fitness) };
+            return traits;
         }
     }
 }
