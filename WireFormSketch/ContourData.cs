@@ -15,41 +15,41 @@ namespace WireFormSketch
         /// <summary>
         /// The contour of interest
         /// </summary>
-        public readonly Point[] contour;
+        public readonly Point[] Contour { get; init; }
         /// <summary>
         /// The bounding rect surrounding the contour of interest
         /// </summary>
-        public readonly Rectangle boundingRect;
+        public readonly Rectangle BoundingRect { get; init; }
         /// <summary>
         /// The centroid of the contour of interest
         /// </summary>
-        public readonly MCvPoint2D64f centroid;
+        public readonly MCvPoint2D64f Centroid { get; init; }
         /// <summary>
         /// The arc length of the contour of interest
         /// </summary>
-        public readonly double arcLength;
+        public readonly double ArcLength { get; init; }
         /// <summary>
         /// The approximated contour of interest with epsilon <see cref="WireFormSketchProperties.GateApproxEpsilon"/>
         /// </summary>
-        public readonly Point[] approxC;
+        public readonly Point[] ApproxC { get; init; }
         /// <summary>
         /// The left edge of points on the contour (those with X < centroid.X).
         /// </summary>
-        public readonly IEnumerable<Point> leftEdge;
+        public readonly IEnumerable<Point> LeftEdge { get; init; }
         /// <summary>
         /// The child contours of the contour of interest (sorted by centroid from left to right then top to bottom)
         /// </summary>
-        public readonly SortedSet<ContourData> children;
+        public readonly SortedSet<ContourData> Children { get; init; }
 
         public ContourData(Point[] contour, Point[] approxC, Rectangle boundingRect, SortedSet<ContourData> children, MCvPoint2D64f centroid, double arcLength, IEnumerable<Point> leftEdge)
         {
-            this.contour = contour;
-            this.boundingRect = boundingRect;
-            this.centroid = centroid;
-            this.arcLength = arcLength;
-            this.approxC = approxC;
-            this.leftEdge = leftEdge;
-            this.children = children;
+            this.Contour = contour;
+            this.BoundingRect = boundingRect;
+            this.Centroid = centroid;
+            this.ArcLength = arcLength;
+            this.ApproxC = approxC;
+            this.LeftEdge = leftEdge;
+            this.Children = children;
         }
 
         public static ContourData From(VectorOfVectorOfPoint contours, int i, HierarchyMatrix hierarchy, WireFormSketchProperties props)
@@ -80,7 +80,7 @@ namespace WireFormSketch
                 ContourData child = From(contours, j, hierarchy, props);
 
                 //if the child is too small to be considered a child
-                if (child.boundingRect.Width * child.boundingRect.Height < props.GateChildMinAreaPercent * rect.Width * rect.Height) continue;
+                if (child.BoundingRect.Width * child.BoundingRect.Height < props.GateChildMinAreaPercent * rect.Width * rect.Height) continue;
 
                 children.Add(child);
             }
@@ -90,8 +90,8 @@ namespace WireFormSketch
 
         public int CompareTo([AllowNull] ContourData other)
         {
-            var xCompare = centroid.X.CompareTo(other.centroid.X);
-            return xCompare != 0 ? xCompare : centroid.Y.CompareTo(other.centroid.Y);
+            var xCompare = Centroid.X.CompareTo(other.Centroid.X);
+            return xCompare != 0 ? xCompare : Centroid.Y.CompareTo(other.Centroid.Y);
         }
     }
 }

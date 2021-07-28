@@ -19,6 +19,8 @@ namespace WireFormSketch
             InitializeComponent();
         }
 
+        public static ImageBox imagebox;
+
         readonly WireFormSketch sketcher = new WireFormSketch(new WireFormSketchProperties());
 
         private void Form1_Load(object sender, EventArgs e)
@@ -26,6 +28,7 @@ namespace WireFormSketch
             capture = new VideoCapture(1);
             capture.Set(CapProp.FrameWidth, 1280);
             capture.Set(CapProp.FrameHeight, 720);
+            imagebox = imageBox2;
 
 
             Application.Idle += LoadFrame;

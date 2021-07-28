@@ -47,7 +47,7 @@ namespace WireFormSketch
             // 
             this.imageBox1.Location = new System.Drawing.Point(140, 21);
             this.imageBox1.Name = "imageBox1";
-            this.imageBox1.Size = new System.Drawing.Size(582, 395);
+            this.imageBox1.Size = new System.Drawing.Size(767, 596);
             this.imageBox1.TabIndex = 2;
             this.imageBox1.TabStop = false;
             // 
@@ -63,7 +63,7 @@ namespace WireFormSketch
             // 
             // imageBox2
             // 
-            this.imageBox2.Location = new System.Drawing.Point(731, 21);
+            this.imageBox2.Location = new System.Drawing.Point(877, 21);
             this.imageBox2.Name = "imageBox2";
             this.imageBox2.Size = new System.Drawing.Size(582, 395);
             this.imageBox2.TabIndex = 4;
@@ -89,7 +89,7 @@ namespace WireFormSketch
             // 
             // imageBox3
             // 
-            this.imageBox3.Location = new System.Drawing.Point(168, 422);
+            this.imageBox3.Location = new System.Drawing.Point(997, 434);
             this.imageBox3.Name = "imageBox3";
             this.imageBox3.Size = new System.Drawing.Size(374, 183);
             this.imageBox3.TabIndex = 2;
@@ -99,7 +99,7 @@ namespace WireFormSketch
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1325, 658);
+            this.ClientSize = new System.Drawing.Size(1471, 774);
             this.Controls.Add(this.imageBox3);
             this.Controls.Add(this.ValueUpperBound);
             this.Controls.Add(this.ValueLowerBound);

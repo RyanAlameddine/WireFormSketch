@@ -88,5 +88,25 @@ namespace WireFormSketch
 
             return new Rectangle(x, y, xT - x, yT - y);
         }
+
+        public static int ClosestInRange(this IList<MCvPoint2D64f> points, MCvPoint2D64f target, double maxRangeSqrd)
+        {
+            double minDistSqr = double.MaxValue;
+            int minDistIndex = -1;
+            for (int i = 0; i < points.Count; i++)
+            {
+
+                double distSqr = points[i].DistanceSqr(target);
+                if (distSqr > maxRangeSqrd) continue;
+
+                if (distSqr < minDistSqr)
+                {
+                    minDistSqr = distSqr;
+                    minDistIndex = i;
+                }
+            }
+
+            return minDistIndex;
+        }
     }
 }

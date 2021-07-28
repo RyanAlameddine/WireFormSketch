@@ -1,4 +1,5 @@
-﻿using Emgu.CV.Structure;
+﻿using Emgu.CV;
+using Emgu.CV.Structure;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -68,5 +69,23 @@ namespace WireFormSketch
         /// true if the gate children should be drawn to the screen.
         /// </summary>
         public bool DrawGateChildren { get; init; } = true;
+
+        /// <summary>
+        /// The lower bound of the wire color detection (hsv).
+        /// </summary>
+        public MCvScalar WireColorLower { get; init; } = new MCvScalar(160 / 2, 255 / 4, 255 / 2);
+        /// <summary>
+        /// The upper bound of the wire color detection (hsv).
+        /// </summary>
+        public MCvScalar WireColorUpper { get; init; } = new MCvScalar(274 / 2, 255, 255);
+
+        /// <summary>
+        /// The true (unmodified by arclength) epsilon value to aproximate the wires.
+        /// </summary>
+        public double WireApproxTrueEpsilon { get; internal set; } = 10;
+        /// <summary>
+        /// The amount of pixels off from square a bit source is allowed to be.
+        /// </summary>
+        public int BitSourceSizeTolerance { get; internal set; } = 10;
     }
 }

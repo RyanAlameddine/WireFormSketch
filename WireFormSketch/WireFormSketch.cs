@@ -27,14 +27,15 @@ namespace WireFormSketch
 
 
         List<(GateTraits gate, ContourData contourData)> gateRecord = new List<(GateTraits gate, ContourData contourData)>();
+        List<(Point[] contour, Point[] approx)> wireRecord = new List<(Point[] contour, Point[] approx)>();
 
         /// <summary>
         /// The main function of this library. 
         /// Takes in an image representing the current frame to process and draw gates and wires drawn onto.
         /// </summary>
         /// <param name="frame">The current input from the camera (or image loaded in)</param>
-        /// <param name="readGates">Whether or not gates should be read on this frame.</param>
-        public string ProcessFrame(Mat frame, bool readGates)
+        /// <param name="readCircuit">Whether or not gates/wires should be read on this frame.</param>
+        public string ProcessFrame(Mat frame, bool readCircuit)
         {
 
             var docRet = FindDocument(frame);
@@ -44,31 +45,58 @@ namespace WireFormSketch
             //(Mat document, Mat f_DocumentMask, Mat f_Transformation) = documentData;
 
 
-            if (readGates)
+            if (readCircuit)
             {
                 var gateRet = FindGates(doc);
                 if (gateRet.IsT0) return gateRet.AsT0; //if get error message, return error
                 gateRecord = gateRet.AsT1; //record gate data
+
+                var wireRet = FindWires(doc);
+                if (wireRet.IsT0) return wireRet.AsT0; //if get error message, return error
+                wireRecord = wireRet.AsT1; //record wire data
+
+
             }
 
+            DrawOutput(frame, doc);
+
+            return null;
+        }
+
+        /// <summary>
+        /// Draws all the output onto frame through the document ROI.
+        /// </summary>
+        private void DrawOutput(Mat frame, DocumentData doc)
+        {
             foreach (var gate in gateRecord)
             {
-                CvInvoke.Rectangle(doc.Document, gate.contourData.boundingRect, new MCvScalar(), 3);
-                CvInvoke.PutText(doc.Document, gate.gate.ToString(), new Point((int)gate.contourData.centroid.X, (int)gate.contourData.centroid.Y), FontFace.HersheySimplex, 1, new MCvScalar(0, 0, 255), 3);
+                CvInvoke.Rectangle(doc.Document, gate.contourData.BoundingRect, new MCvScalar(), 3);
+                CvInvoke.PutText(doc.Document, gate.gate.ToString(), new Point((int)gate.contourData.Centroid.X, (int)gate.contourData.Centroid.Y), FontFace.HersheySimplex, 1, new MCvScalar(0, 0, 255), 3);
+
+                CvInvoke.Polylines(doc.Document, gate.contourData.ApproxC, true, new MCvScalar(0, 0, 0), 2);
+                //draw children for debugging.
+                if (Props.DrawGateChildren)
+                {
+                    int j = 1;
+                    foreach (var child in gate.contourData.Children)
+                    {
+                        CvInvoke.Polylines(doc.Document, child.ApproxC, true, new MCvScalar(255 / j, 0, 0), 2);
+                        j++;
+                    }
+                }
             }
 
+            foreach ((var contour, var approx) in wireRecord)
+            {
+                CvInvoke.Polylines(doc.Document, contour, true, new MCvScalar(255, 0, 0), 2);
+                CvInvoke.Polylines(doc.Document, approx, true, new MCvScalar(255, 255, 0), 2);
+            }
 
             using Mat documentUnWarped = new Mat(frame.Size, frame.Depth, frame.NumberOfChannels);
             CvInvoke.WarpPerspective(doc.D_Untrimmed, documentUnWarped, doc.F_Transformation, frame.Size, warpType: Warp.InverseMap);
 
             documentUnWarped.CopyTo(frame, doc.F_DocumentMask);
-
-            return null;
         }
-
-
-
-
 
 
         /// <summary>
@@ -194,28 +222,17 @@ namespace WireFormSketch
 
 
                 //if it is on the edge (might be a border problem with the paper itself).
-                var rect = contourData.boundingRect;
+                var rect = contourData.BoundingRect;
                 if (rect.X <= 1 || rect.Y <= 1 || rect.Width + rect.X >= d_GateMask.Width - 1 || rect.Height + rect.Y >= d_GateMask.Height - 1)
                 {
                     continue;
                 }
 
                 //if it is a modifier:
-                if (contourData.children.Count == 0)
+                if (contourData.Children.Count == 0)
                 {
                     modifiers.Add(contourData);
                     continue;
-                }
-
-                //draw children for debugging.
-                if (Props.DrawGateChildren)
-                {
-                    int j = 1;
-                    foreach (var child in contourData.children)
-                    {
-                        CvInvoke.Polylines(doc.Document, child.contour, true, new MCvScalar(255 / j, 0, 0), 2);
-                        j++;
-                    }
                 }
 
                 gates.Add((GetTraits(contourData), contourData));
@@ -224,49 +241,42 @@ namespace WireFormSketch
             //check modifiers and link them to their respective gates:
             foreach(var modifier in modifiers)
             {
-                bool isXorBar = modifier.boundingRect.Height > 2 * modifier.boundingRect.Width;
-                if (!isXorBar) continue;
-
-                //a point that should be near the centroid of the gate to link it to. For example:
-                //|  |- - -\
-                //|  | x o |    (x is the linker point, o is the centroid of the contour
-                //|  |- - -/
+                int height = modifier.BoundingRect.Height;
+                int width = modifier.BoundingRect.Width;
+                bool isXorBar = height > 2 * width;
+                bool isBitPin = Math.Abs(height - width) < Props.BitSourceSizeTolerance && width * height > 100;
+                if (isXorBar)
+                {
+                    //a point that should be near the centroid of the gate to link it to. For example:
+                    //|  |- - -\
+                    //|  | x o |    (x is the linker point, o is the centroid of the contour
+                    //|  |- - -/
                 
-                Point linkerPoint = new Point((int) (modifier.centroid.X + modifier.boundingRect.Height), (int)modifier.centroid.Y);
+                    Point linkerPoint = new Point((int) (modifier.Centroid.X + modifier.BoundingRect.Height), (int)modifier.Centroid.Y);
 
-                //the maximum allowed distance from the linker point
-                double maxDistSqr = modifier.boundingRect.Height * modifier.boundingRect.Height;
+                    //the maximum allowed distance from the linker point
+                    double maxDistSqr = modifier.BoundingRect.Height * modifier.BoundingRect.Height;
 
-                //find the centroid of the gate that is closest to our linker point
-                double minDistSqr = double.MaxValue;
-                int minDistIndex = -1;
-                for(int i = 0; i < gates.Count; i++)
+                    //find the centroid of the gate that is closest to our linker point
+                    int minDistIndex = gates
+                        .Where(g => g.gate.HasFlag(GateTraits.XorBar))
+                        .Select(g => g.contourData.Centroid)
+                        .ToArray()
+                        .ClosestInRange(modifier.Centroid, maxDistSqr);
+
+                    if(minDistIndex == -1) continue;
+
+                    //add xor flag and update bounding rect
+                    (GateTraits minGate, ContourData minCont) = gates[minDistIndex];
+
+                    Rectangle unionedRect = minCont.BoundingRect.Union(modifier.BoundingRect);
+                    gates[minDistIndex] = (minGate | GateTraits.XorBar, new ContourData(minCont.Contour, minCont.ApproxC, unionedRect, minCont.Children, minCont.Centroid, minCont.ArcLength, minCont.LeftEdge));
+
+                } 
+                else if (isBitPin)
                 {
-                    (GateTraits gate, ContourData contourData) = gates[i];
-
-                    double distSqr = contourData.centroid.DistanceSqr(modifier.centroid);
-                    if (distSqr > maxDistSqr || gate.HasFlag(GateTraits.XorBar)) continue;
-
-                    if(distSqr < minDistSqr)
-                    {
-                        minDistSqr = distSqr;
-                        minDistIndex = i;
-                    }
-                }
-
-                if(minDistIndex == -1)
-                {
-                    CvInvoke.Polylines(doc.Document, modifier.contour, true, new MCvScalar(0, 0, 255), 3);
-                    continue;
-                }
-
-                //add xor flag and update bounding rect
-                (GateTraits minGate, ContourData minCont) = gates[minDistIndex];
-
-                Rectangle unionedRect = minCont.boundingRect.Union(modifier.boundingRect);
-
-                gates[minDistIndex] = (minGate | GateTraits.XorBar, new ContourData(minCont.contour, minCont.approxC, unionedRect, minCont.children, minCont.centroid, minCont.arcLength, minCont.leftEdge));
-            
+                    gates.Add((GateTraits.Bit, modifier));
+                }                            
             }
 
             return gates;
@@ -278,14 +288,43 @@ namespace WireFormSketch
         private GateTraits GetTraits(ContourData contourData)
         {
             GateTraits traits = GateTraits.NoTraits;
-            if (contourData.children.Count == 0) return traits;
-            if (contourData.children.Count == 1) traits |= GateTraits.NotDotted;
-            if (contourData.children.Count == 2) traits |= GateTraits.Dotted;
-            if (contourData.leftEdge.Count() == 2) traits |= GateTraits.FlatLeftEdge;
-            if (contourData.children.Min.approxC.Length == 3) traits |= GateTraits.FirstChildTriangular;
-            //XOrBar is added by modifier handler
+            if (contourData.Children.Count == 0) return traits;
+            if (contourData.Children.Count == 1) traits |= GateTraits.NotDotted;
+            if (contourData.Children.Count == 2) traits |= GateTraits.Dotted;
+            if (contourData.LeftEdge.Count() == 2) traits |= GateTraits.FlatLeftEdge;
+            if (contourData.Children.Min.ApproxC.Length == 3) traits |= GateTraits.FirstChildTriangular;
+            //XOrBar and Bit are added by modifier handler
 
             return traits;
+        }
+
+        private OneOf<string, List<(Point[] contour, Point[] approx)>> FindWires(DocumentData doc)
+        {
+            using Mat d_blurred = doc.Document.Clone();
+            CvInvoke.GaussianBlur(d_blurred, d_blurred, new Size(7, 7), 0);
+
+            using Mat d_hsv = new Mat();
+            CvInvoke.CvtColor(d_blurred, d_hsv, ColorConversion.Bgr2Hsv);
+
+            using Mat d_wireMask = new Mat();
+            CvInvoke.InRange(d_hsv, (ScalarArray)Props.WireColorLower, (ScalarArray)Props.WireColorUpper, d_wireMask);
+
+            Form1.imagebox.Image?.Dispose();
+            Form1.imagebox.Image = d_wireMask;
+
+            using VectorOfVectorOfPoint d_wireContours = new VectorOfVectorOfPoint();
+            using Mat d_wireHierarchy = new Mat();
+            CvInvoke.FindContours(d_wireMask, d_wireContours, d_wireHierarchy, RetrType.External, ChainApproxMethod.ChainApproxSimple);
+
+            List<(Point[] contour, Point[] approx)> wires = new List<(Point[] contour, Point[] approx)>();
+            for(int i = 0; i < d_wireContours.Size; i++)
+            {
+                using VectorOfPoint approx = new VectorOfPoint();
+                CvInvoke.ApproxPolyDP(d_wireContours[i], approx, Props.WireApproxTrueEpsilon, true);
+                wires.Add((d_wireContours[i].ToArray(), approx.ToArray()));
+            }
+
+            return wires;
         }
     }
 }

@@ -17,7 +17,7 @@ namespace WireFormSketch
         /// <summary>
         /// The document Mat.
         /// </summary>
-        public readonly Mat Document;
+        public Mat Document { get; }
         /// <summary>
         /// The mask of the document on the original frame mat.
         /// </summary>
