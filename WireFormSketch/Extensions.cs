@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using Wireform.MathUtils;
 
 namespace Wireform.Sketch
 {
@@ -24,7 +25,7 @@ namespace Wireform.Sketch
             static int comparison(Point p1, Point p2) => p1.X.CompareTo(p2.X);
             Array.Sort(points, comparison);
 
-            var lefts = points.Take(points.Length / 2);
+            var lefts  = points.Take(points.Length / 2);
             var rights = points.Skip(points.Length / 2);
 
             topLeft     = lefts .Aggregate((min, current) => current.Y < min.Y ? current : min);
@@ -33,36 +34,6 @@ namespace Wireform.Sketch
             bottomRight = rights.Aggregate((max, current) => current.Y > max.Y ? current : max);
 
             return (topLeft, topRight, bottomLeft, bottomRight);
-
-            //Point ignorePoint = new Point(-1, -1);
-
-            //List<Point> toIgnore = new List<Point>(3);
-
-            //Point topLeft     = minDist(new Point(0      , 0       ));
-            //Point topRight    = minDist(new Point(imWidth, 0       ));
-            //Point bottomLeft  = minDist(new Point(0      , imHeight));
-            //Point bottomRight = minDist(new Point(imWidth, imHeight));
-
-            //return (topLeft, topRight, bottomLeft, bottomRight);
-
-            ////gets the point in the contour with theminimum distance to the target
-            //Point minDist(Point target)
-            //{
-            //    Point point = Point.Empty;
-            //    double distSqr = double.MaxValue;
-            //    for (int i = 0; i < contour.Size; i++)
-            //    {
-            //        if (toIgnore.Contains(contour[i])) continue;
-            //        double currDistSqr = contour[i].DistanceSqr(target);
-            //        if (currDistSqr < distSqr)
-            //        {
-            //            point = contour[i];
-            //            distSqr = currDistSqr;
-            //        }
-            //    }
-            //    toIgnore.Add(point);
-            //    return point;
-            //}
         }
 
         public static double DistanceSqr(this Point point, Point other)
@@ -89,7 +60,7 @@ namespace Wireform.Sketch
             return new Rectangle(x, y, xT - x, yT - y);
         }
 
-        public static int ClosestInRange(this IList<MCvPoint2D64f> points, MCvPoint2D64f target, double maxRangeSqrd)
+        public static int ClosestInRange(this IList<Point> points, Point target, double maxRangeSqrd)
         {
             double minDistSqr = double.MaxValue;
             int minDistIndex = -1;
@@ -107,6 +78,19 @@ namespace Wireform.Sketch
             }
 
             return minDistIndex;
+        }
+
+        public static Vec2 ToVec2(this Point point) => new Vec2(point.X, point.Y);
+        public static Point ToPoint(this Vec2 point) => new Point((int) point.X, (int)point.Y);
+        public static Point ToPoint(this MCvPoint2D64f point) => new Point((int) point.X, (int)point.Y);
+
+        public static IEnumerable<(T1, T2, T3)> Zip3<T1, T2, T3>(this IEnumerable<T1> source, IEnumerable<T2> second, IEnumerable<T3> third)
+        {
+            using var e1 = source.GetEnumerator();
+            using var e2 = second.GetEnumerator();
+            using var e3 = third.GetEnumerator();
+            while (e1.MoveNext() && e2.MoveNext() && e3.MoveNext())
+                yield return (e1.Current, e2.Current, e3.Current);
         }
     }
 }

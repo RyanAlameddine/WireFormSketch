@@ -12,6 +12,7 @@ using System.Text;
 using Wireform.Circuitry.Data;
 using Wireform.Circuitry.Utils;
 using Wireform.MathUtils;
+using Wireform.Circuitry;
 
 namespace Wireform.Sketch
 {
@@ -21,6 +22,7 @@ namespace Wireform.Sketch
         public WireformSketch(WireformSketchProperties properties)
         {
             Props = properties;
+            _ = GateCollection.GatePaths; //to temporarily fix a bug in wireform 
             //gateRegistries = new List<GateFitnessFunc>()
             //{
             //    AndGate,
@@ -31,9 +33,14 @@ namespace Wireform.Sketch
 
         static readonly Dictionary<GateTraits, string> gatePaths = new()
         {
-            { GateTraits.And, "Logic/And"  },
-            { GateTraits.Or , "Logic/Or"  },
-            { GateTraits.Not, "Logic/Not"  },
+            { GateTraits.Bit, "BitSource" },
+            { GateTraits.And, "Logic/AND" },
+            { GateTraits.Or , "Logic/OR"  },
+            { GateTraits.Xor, "Logic/XOR" },
+            { GateTraits.Not, "Logic/NOT" },
+            { GateTraits.NAnd, "Logic/NAND" },
+            { GateTraits.NOr , "Logic/NOR"  },
+            { GateTraits.XNor, "Logic/XNOR" },
         };
 
         readonly List<(GateTraits gate, ContourData contourData)> gateRecord = new();
@@ -217,7 +224,7 @@ namespace Wireform.Sketch
             {
                 int height = modifier.BoundingRect.Height;
                 int width = modifier.BoundingRect.Width;
-                bool isXorBar = height > 2 * width;
+                bool isXorBar = height > 1.5 * width;
                 bool isBitPin = Math.Abs(height - width) < Props.BitSourceSizeTolerance && width * height > 100;
                 if (isXorBar)
                 {
@@ -232,11 +239,10 @@ namespace Wireform.Sketch
                     double maxDistSqr = modifier.BoundingRect.Height * modifier.BoundingRect.Height;
 
                     //find the centroid of the gate that is closest to our linker point
-                    int minDistIndex = gateRecord
-                        .Where(g => g.gate.HasFlag(GateTraits.XorBar))
-                        .Select(g => g.contourData.Centroid)
+                    int minDistIndex = gateRecord //.Where(g => !g.gate.HasFlag(GateTraits.XorBar))
+                        .Select(g => g.contourData.Centroid.ToPoint())
                         .ToArray()
-                        .ClosestInRange(modifier.Centroid, maxDistSqr);
+                        .ClosestInRange(modifier.Centroid.ToPoint(), maxDistSqr);
 
                     if(minDistIndex == -1) continue;
 
@@ -309,23 +315,89 @@ namespace Wireform.Sketch
         /// </summary>
         private void LoadWireform()
         {
-            boardStack.CurrentState.Connections.Clear();
-            boardStack.CurrentState.Gates.Clear();
-            boardStack.CurrentState.Wires.Clear();
-            boardStack.CurrentState.Gates.AddRange(gateRecord.Select(ToGate).Where(g => g is not null));
+            var state = boardStack.CurrentState;
+            state.Connections.Clear();
+            state.Gates.Clear();
+            state.Wires.Clear();
+
+            state.Gates.AddRange(gateRecord.Select(ToGate).Where(g => g is not null));
+            state.Gates.ForEach(x => x.AddConnections(state.Connections));
+
+            //TODO: optimize this from n^2 to something more reasonable (quadtree?)
+            var allPins = state.Gates.SelectMany(gate => gate.Inputs.Append(gate.Outputs[0]));
+            foreach(var pin in allPins)
+            {
+                //pair each point on each wire with the index of it's corresponding wire in wireRecord
+                IEnumerable<(Point point, int wireIndex, int indexInWire)> wirePoints = wireRecord
+                    .Select(wireRec => wireRec.approx)
+                    .Zip(Enumerable.Range(0, wireRecord.Count))
+                    .SelectMany(((Point[] approx, int i) val) 
+                        => val.approx.Zip3(
+                            Enumerable.Repeat(val.i, val.approx.Length),
+                            Enumerable.Range(0, val.approx.Length)));
+
+                //the index in wireRecord of the wire point closest to the pin
+                int index = wirePoints
+                    .Select(p => p.point)
+                    .ToArray()
+                    .ClosestInRange(pin.StartPoint.ToPoint(), Props.GatePinSnapRange);
+
+                if (index == -1) continue;
+
+                (Point point, int wireIndex, int indexInWire) closest = wirePoints.ElementAt(index);
+
+                wireRecord[closest.wireIndex].approx[closest.indexInWire] = pin.StartPoint.ToPoint();
+            }
+
+            state.Wires.AddRange(wireRecord.SelectMany(ToWire));
+            state.Wires.ForEach(wire => wire.AddConnections(state.Connections));
+            
         }
 
+        private List<WireLine> ToWire((Point[] contour, Point[] approx) wireData)
+        {
+            (_, Point[] approx) = wireData;
+            List<WireLine> wires = new List<WireLine>();
+
+            if (approx.Length == 0) return wires;
+
+            wires.Add(new WireLine(approx[0].ToVec2(), approx[^1].ToVec2(), true));
+
+            for(int i = 0; i < approx.Length - 1; i++)
+            {
+                wires.Add(new WireLine(approx[i].ToVec2(), approx[i + 1].ToVec2(), true));
+            }
+            return wires;
+        }
+
+
+        /// <summary>
+        /// Converts a gate data object to a Gate.
+        /// </summary>
+        /// <returns>null if the gate cannot be instantiated</returns>
         private Gate ToGate((GateTraits gate, ContourData contourData) data)
         {
             (GateTraits gate, ContourData contourData) = data;
 
             if(gatePaths.TryGetValue(gate, out string path))
             {
-                Vec2 centroid = new Vec2((int)contourData.Centroid.X, (int)contourData.Centroid.Y);
                 Gate newGate = GateCollection.CreateGate(path, new Vec2(0, 0));
-                //center of gate hitbox
+
+                //set gate to center of gate hitbox
+                Vec2 centroid = new Vec2((int)contourData.Centroid.X, (int)contourData.Centroid.Y);
                 var gateOffsetFromCenterX = (new Vec2(newGate.HitBox.X, newGate.HitBox.Y)*2 + new Vec2(newGate.HitBox.Width, newGate.HitBox.Height))/2;
                 newGate.SetPosition(centroid - gateOffsetFromCenterX);
+
+                //Set gate input positions (evenly space the corners and inputs along the left edge) | * * * |
+                Rectangle rect = contourData.BoundingRect;
+                var inputs = newGate.Inputs;
+                int offset = contourData.BoundingRect.Height / (inputs.Length + 1);
+                for(int i = 0; i < inputs.Length; i++)
+                {
+                    inputs[i].SetPosition(new Vec2(rect.X, rect.Y + offset * (i + 1)));
+                }
+
+                newGate.Outputs[0].SetPosition(new Vec2(rect.X + rect.Width, rect.Y + rect.Height / 2));
 
                 return newGate;
             }
@@ -337,28 +409,58 @@ namespace Wireform.Sketch
         /// </summary>
         private void DrawOutput(Mat frame, DocumentData doc)
         {
-            foreach (var gate in gateRecord)
+            if (Props.DebugDrawCv)
             {
-                CvInvoke.Rectangle(doc.Document, gate.contourData.BoundingRect, new MCvScalar(), 3);
-                CvInvoke.PutText(doc.Document, gate.gate.ToString(), new Point((int)gate.contourData.Centroid.X, (int)gate.contourData.Centroid.Y), FontFace.HersheySimplex, 1, new MCvScalar(0, 0, 255), 3);
-
-                CvInvoke.Polylines(doc.Document, gate.contourData.ApproxC, true, new MCvScalar(0, 0, 0), 2);
-                //draw children for debugging.
-                if (Props.DrawGateChildren)
+                foreach (var gate in gateRecord)
                 {
-                    int j = 1;
-                    foreach (var child in gate.contourData.Children)
+                    CvInvoke.Rectangle(doc.Document, gate.contourData.BoundingRect, new MCvScalar(), 3);
+                    CvInvoke.PutText(doc.Document, gate.gate.ToString(), new Point((int)gate.contourData.Centroid.X, (int)gate.contourData.Centroid.Y), FontFace.HersheySimplex, 1, new MCvScalar(0, 0, 255), 3);
+
+                    CvInvoke.Polylines(doc.Document, gate.contourData.ApproxC, true, new MCvScalar(0, 0, 0), 2);
+                    //draw children for debugging.
+                    if (Props.DrawGateChildren)
                     {
-                        CvInvoke.Polylines(doc.Document, child.ApproxC, true, new MCvScalar(255 / j, 0, 0), 2);
-                        j++;
+                        int j = 1;
+                        foreach (var child in gate.contourData.Children)
+                        {
+                            CvInvoke.Polylines(doc.Document, child.ApproxC, true, new MCvScalar(255 / j, 0, 0), 2);
+                            j++;
+                        }
                     }
                 }
-            }
 
-            foreach ((var contour, var approx) in wireRecord)
+                foreach ((var contour, var approx) in wireRecord)
+                {
+                    CvInvoke.Polylines(doc.Document, contour, true, new MCvScalar(255, 0, 0), 2);
+                    CvInvoke.Polylines(doc.Document, approx, true, new MCvScalar(255, 255, 0), 2);
+                }
+            }
+            if (Props.DebugDrawWireform)
             {
-                CvInvoke.Polylines(doc.Document, contour, true, new MCvScalar(255, 0, 0), 2);
-                CvInvoke.Polylines(doc.Document, approx, true, new MCvScalar(255, 255, 0), 2);
+                
+                foreach (var connection in boardStack.CurrentState.Connections)
+                {
+                    if (connection.Value.Count <= 1 || !connection.Value.Where(x => x is GatePin).Any()) continue;
+                    CvInvoke.DrawMarker(doc.Document, new Point((int)connection.Key.X, (int)connection.Key.Y), new MCvScalar(0, 255, 255), MarkerTypes.Star, thickness: 3);
+                }
+
+                foreach (var gate in boardStack.CurrentState.Gates)
+                {
+                    CvInvoke.PutText(doc.Document, gate.GetType().Name.ToString(), new Point((int)gate.StartPoint.X, (int)gate.StartPoint.Y), FontFace.HersheyComplex, 1, new MCvScalar());
+                    foreach (var input in gate.Inputs)
+                    {
+                        CvInvoke.DrawMarker(doc.Document, new Point((int)input.StartPoint.X, (int)input.StartPoint.Y), new MCvScalar(0, 255, 0), MarkerTypes.Cross, thickness: 3);
+                    }
+                    foreach (var output in gate.Outputs)
+                    {
+                        CvInvoke.DrawMarker(doc.Document, new Point((int)output.StartPoint.X, (int)output.StartPoint.Y), new MCvScalar(0, 255, 0), MarkerTypes.Diamond, thickness: 3);
+                    }
+                }
+
+                foreach (var wire in boardStack.CurrentState.Wires)
+                {
+                    CvInvoke.Line(doc.Document, wire.StartPoint.ToPoint(), wire.EndPoint.ToPoint(), new MCvScalar(100, 100, 100), 3);
+                }
             }
 
             using Mat documentUnWarped = new Mat(frame.Size, frame.Depth, frame.NumberOfChannels);

@@ -21,7 +21,10 @@ namespace Wireform.Sketch
 
         public static ImageBox imagebox;
 
-        readonly WireformSketch sketcher = new WireformSketch(new WireformSketchProperties());
+        readonly WireformSketch sketcher = new WireformSketch(new WireformSketchProperties()
+        {
+            DebugDrawWireform = true
+        });
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -30,7 +33,6 @@ namespace Wireform.Sketch
             capture.Set(CapProp.FrameHeight, 720);
             imagebox = imageBox2;
 
-
             Application.Idle += LoadFrame;
         }
 
@@ -38,7 +40,12 @@ namespace Wireform.Sketch
         {
             //load a frame from the camera
             using Mat frame = capture.QueryFrame();
-            if (frame == null) return;
+            if (frame == null)
+            {
+                capture.Stop();
+                capture.Start();
+                return;
+            }
 
             sketcher.ProcessFrame(frame, false);
 
