@@ -1,5 +1,5 @@
 ﻿
-namespace WireFormSketch
+namespace Wireform.Sketch
 {
     partial class Form1
     {

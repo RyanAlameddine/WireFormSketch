@@ -9,7 +9,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace WireFormSketch
+namespace Wireform.Sketch
 {
     public partial class Form1 : Form
     {
@@ -21,7 +21,7 @@ namespace WireFormSketch
 
         public static ImageBox imagebox;
 
-        readonly WireFormSketch sketcher = new WireFormSketch(new WireFormSketchProperties());
+        readonly WireformSketch sketcher = new WireformSketch(new WireformSketchProperties());
 
         private void Form1_Load(object sender, EventArgs e)
         {

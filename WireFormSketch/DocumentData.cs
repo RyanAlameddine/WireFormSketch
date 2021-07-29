@@ -3,10 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace WireFormSketch
+namespace Wireform.Sketch
 {
     /// <summary>
-    /// Stores the data and Mats of the document loaded by WireFormSketch.FindDocument
+    /// Stores the data and Mats of the document loaded by WireformSketch.FindDocument
     /// </summary>
     public readonly struct DocumentData : IDisposable
     {

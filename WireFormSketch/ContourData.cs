@@ -8,7 +8,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 
-namespace WireFormSketch
+namespace Wireform.Sketch
 {
     public readonly struct ContourData : IComparable<ContourData>
     {
@@ -29,7 +29,7 @@ namespace WireFormSketch
         /// </summary>
         public readonly double ArcLength { get; init; }
         /// <summary>
-        /// The approximated contour of interest with epsilon <see cref="WireFormSketchProperties.GateApproxEpsilon"/>
+        /// The approximated contour of interest with epsilon <see cref="WireformSketchProperties.GateApproxEpsilon"/>
         /// </summary>
         public readonly Point[] ApproxC { get; init; }
         /// <summary>
@@ -52,7 +52,7 @@ namespace WireFormSketch
             this.Children = children;
         }
 
-        public static ContourData From(VectorOfVectorOfPoint contours, int i, HierarchyMatrix hierarchy, WireFormSketchProperties props)
+        public static ContourData From(VectorOfVectorOfPoint contours, int i, HierarchyMatrix hierarchy, WireformSketchProperties props)
         {
             using VectorOfPoint contour = contours[i]; //external gate contour (the outline)
             Rectangle rect = CvInvoke.BoundingRectangle(contour); //bounding box of the gate contour

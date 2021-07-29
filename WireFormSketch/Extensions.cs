@@ -7,7 +7,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 
-namespace WireFormSketch
+namespace Wireform.Sketch
 {
     static class Extensions
     {

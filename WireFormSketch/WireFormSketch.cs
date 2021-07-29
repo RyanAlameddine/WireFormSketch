@@ -7,14 +7,18 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using Wireform;
 using System.Text;
+using Wireform.Circuitry.Data;
+using Wireform.Circuitry.Utils;
+using Wireform.MathUtils;
 
-namespace WireFormSketch
+namespace Wireform.Sketch
 {
-    public class WireFormSketch
+    public class WireformSketch
     {
-        public readonly WireFormSketchProperties Props;
-        public WireFormSketch(WireFormSketchProperties properties)
+        public readonly WireformSketchProperties Props;
+        public WireformSketch(WireformSketchProperties properties)
         {
             Props = properties;
             //gateRegistries = new List<GateFitnessFunc>()
@@ -25,9 +29,16 @@ namespace WireFormSketch
             //};
         }
 
+        static readonly Dictionary<GateTraits, string> gatePaths = new()
+        {
+            { GateTraits.And, "Logic/And"  },
+            { GateTraits.Or , "Logic/Or"  },
+            { GateTraits.Not, "Logic/Not"  },
+        };
 
-        List<(GateTraits gate, ContourData contourData)> gateRecord = new List<(GateTraits gate, ContourData contourData)>();
-        List<(Point[] contour, Point[] approx)> wireRecord = new List<(Point[] contour, Point[] approx)>();
+        readonly List<(GateTraits gate, ContourData contourData)> gateRecord = new();
+        readonly List<(Point[] contour, Point[] approx)> wireRecord = new();
+        readonly BoardStack boardStack = new BoardStack(new DebugSaver());
 
         /// <summary>
         /// The main function of this library. 
@@ -47,55 +58,18 @@ namespace WireFormSketch
 
             if (readCircuit)
             {
-                var gateRet = FindGates(doc);
-                if (gateRet.IsT0) return gateRet.AsT0; //if get error message, return error
-                gateRecord = gateRet.AsT1; //record gate data
+                string gateError = FindGates(doc);
+                if (gateError is not null) return gateError; //if get error message, return error
 
-                var wireRet = FindWires(doc);
-                if (wireRet.IsT0) return wireRet.AsT0; //if get error message, return error
-                wireRecord = wireRet.AsT1; //record wire data
+                string wireError = FindWires(doc);
+                if (wireError is not null) return wireError; //if get error message, return error
 
-
+                LoadWireform();
             }
 
             DrawOutput(frame, doc);
 
             return null;
-        }
-
-        /// <summary>
-        /// Draws all the output onto frame through the document ROI.
-        /// </summary>
-        private void DrawOutput(Mat frame, DocumentData doc)
-        {
-            foreach (var gate in gateRecord)
-            {
-                CvInvoke.Rectangle(doc.Document, gate.contourData.BoundingRect, new MCvScalar(), 3);
-                CvInvoke.PutText(doc.Document, gate.gate.ToString(), new Point((int)gate.contourData.Centroid.X, (int)gate.contourData.Centroid.Y), FontFace.HersheySimplex, 1, new MCvScalar(0, 0, 255), 3);
-
-                CvInvoke.Polylines(doc.Document, gate.contourData.ApproxC, true, new MCvScalar(0, 0, 0), 2);
-                //draw children for debugging.
-                if (Props.DrawGateChildren)
-                {
-                    int j = 1;
-                    foreach (var child in gate.contourData.Children)
-                    {
-                        CvInvoke.Polylines(doc.Document, child.ApproxC, true, new MCvScalar(255 / j, 0, 0), 2);
-                        j++;
-                    }
-                }
-            }
-
-            foreach ((var contour, var approx) in wireRecord)
-            {
-                CvInvoke.Polylines(doc.Document, contour, true, new MCvScalar(255, 0, 0), 2);
-                CvInvoke.Polylines(doc.Document, approx, true, new MCvScalar(255, 255, 0), 2);
-            }
-
-            using Mat documentUnWarped = new Mat(frame.Size, frame.Depth, frame.NumberOfChannels);
-            CvInvoke.WarpPerspective(doc.D_Untrimmed, documentUnWarped, doc.F_Transformation, frame.Size, warpType: Warp.InverseMap);
-
-            documentUnWarped.CopyTo(frame, doc.F_DocumentMask);
         }
 
 
@@ -190,7 +164,7 @@ namespace WireFormSketch
         /// <summary>
         /// Reads the gates from the loaded document.
         /// </summary>
-        private OneOf<string, List<(GateTraits gate, ContourData contourData)>> FindGates(DocumentData doc)
+        private string FindGates(DocumentData doc)
         {
             //find the gates using a threshold
             using Mat d_Gray = new Mat();
@@ -212,7 +186,7 @@ namespace WireFormSketch
             if (d_gateContours.Size == 0) return "No Gate contours found";
 
             //now that we have found each gate contour, loop through them and process and register each one
-            List<(GateTraits gate, ContourData contourData)> gates = new List<(GateTraits gate, ContourData contourData)>();
+            gateRecord.Clear();
             List<ContourData> modifiers = new List<ContourData>(); //things that aren't gates (like xor bars)
             
             for (int i = 0; i != -1; i = d_hierarchy[i, 0])
@@ -235,7 +209,7 @@ namespace WireFormSketch
                     continue;
                 }
 
-                gates.Add((GetTraits(contourData), contourData));
+                gateRecord.Add((GetTraits(contourData), contourData));
             }
 
             //check modifiers and link them to their respective gates:
@@ -258,7 +232,7 @@ namespace WireFormSketch
                     double maxDistSqr = modifier.BoundingRect.Height * modifier.BoundingRect.Height;
 
                     //find the centroid of the gate that is closest to our linker point
-                    int minDistIndex = gates
+                    int minDistIndex = gateRecord
                         .Where(g => g.gate.HasFlag(GateTraits.XorBar))
                         .Select(g => g.contourData.Centroid)
                         .ToArray()
@@ -267,25 +241,25 @@ namespace WireFormSketch
                     if(minDistIndex == -1) continue;
 
                     //add xor flag and update bounding rect
-                    (GateTraits minGate, ContourData minCont) = gates[minDistIndex];
+                    (GateTraits minGate, ContourData minCont) = gateRecord[minDistIndex];
 
                     Rectangle unionedRect = minCont.BoundingRect.Union(modifier.BoundingRect);
-                    gates[minDistIndex] = (minGate | GateTraits.XorBar, new ContourData(minCont.Contour, minCont.ApproxC, unionedRect, minCont.Children, minCont.Centroid, minCont.ArcLength, minCont.LeftEdge));
+                    gateRecord[minDistIndex] = (minGate | GateTraits.XorBar, new ContourData(minCont.Contour, minCont.ApproxC, unionedRect, minCont.Children, minCont.Centroid, minCont.ArcLength, minCont.LeftEdge));
 
                 } 
                 else if (isBitPin)
                 {
-                    gates.Add((GateTraits.Bit, modifier));
+                    gateRecord.Add((GateTraits.Bit, modifier));
                 }                            
             }
 
-            return gates;
+            return null;
         }
 
         /// <summary>
         /// Matches the gate traits of the specified gate contour data.
         /// </summary>
-        private GateTraits GetTraits(ContourData contourData)
+        private static GateTraits GetTraits(ContourData contourData)
         {
             GateTraits traits = GateTraits.NoTraits;
             if (contourData.Children.Count == 0) return traits;
@@ -298,7 +272,10 @@ namespace WireFormSketch
             return traits;
         }
 
-        private OneOf<string, List<(Point[] contour, Point[] approx)>> FindWires(DocumentData doc)
+        /// <summary>
+        /// Loads each wire from the document image
+        /// </summary>
+        private string FindWires(DocumentData doc)
         {
             using Mat d_blurred = doc.Document.Clone();
             CvInvoke.GaussianBlur(d_blurred, d_blurred, new Size(7, 7), 0);
@@ -316,15 +293,78 @@ namespace WireFormSketch
             using Mat d_wireHierarchy = new Mat();
             CvInvoke.FindContours(d_wireMask, d_wireContours, d_wireHierarchy, RetrType.External, ChainApproxMethod.ChainApproxSimple);
 
-            List<(Point[] contour, Point[] approx)> wires = new List<(Point[] contour, Point[] approx)>();
+            wireRecord.Clear();
             for(int i = 0; i < d_wireContours.Size; i++)
             {
                 using VectorOfPoint approx = new VectorOfPoint();
                 CvInvoke.ApproxPolyDP(d_wireContours[i], approx, Props.WireApproxTrueEpsilon, true);
-                wires.Add((d_wireContours[i].ToArray(), approx.ToArray()));
+                wireRecord.Add((d_wireContours[i].ToArray(), approx.ToArray()));
             }
 
-            return wires;
+            return null;
+        }
+
+        /// <summary>
+        /// Loads data into Wireform library classes.
+        /// </summary>
+        private void LoadWireform()
+        {
+            boardStack.CurrentState.Connections.Clear();
+            boardStack.CurrentState.Gates.Clear();
+            boardStack.CurrentState.Wires.Clear();
+            boardStack.CurrentState.Gates.AddRange(gateRecord.Select(ToGate).Where(g => g is not null));
+        }
+
+        private Gate ToGate((GateTraits gate, ContourData contourData) data)
+        {
+            (GateTraits gate, ContourData contourData) = data;
+
+            if(gatePaths.TryGetValue(gate, out string path))
+            {
+                Vec2 centroid = new Vec2((int)contourData.Centroid.X, (int)contourData.Centroid.Y);
+                Gate newGate = GateCollection.CreateGate(path, new Vec2(0, 0));
+                //center of gate hitbox
+                var gateOffsetFromCenterX = (new Vec2(newGate.HitBox.X, newGate.HitBox.Y)*2 + new Vec2(newGate.HitBox.Width, newGate.HitBox.Height))/2;
+                newGate.SetPosition(centroid - gateOffsetFromCenterX);
+
+                return newGate;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Draws all the output onto frame through the document ROI.
+        /// </summary>
+        private void DrawOutput(Mat frame, DocumentData doc)
+        {
+            foreach (var gate in gateRecord)
+            {
+                CvInvoke.Rectangle(doc.Document, gate.contourData.BoundingRect, new MCvScalar(), 3);
+                CvInvoke.PutText(doc.Document, gate.gate.ToString(), new Point((int)gate.contourData.Centroid.X, (int)gate.contourData.Centroid.Y), FontFace.HersheySimplex, 1, new MCvScalar(0, 0, 255), 3);
+
+                CvInvoke.Polylines(doc.Document, gate.contourData.ApproxC, true, new MCvScalar(0, 0, 0), 2);
+                //draw children for debugging.
+                if (Props.DrawGateChildren)
+                {
+                    int j = 1;
+                    foreach (var child in gate.contourData.Children)
+                    {
+                        CvInvoke.Polylines(doc.Document, child.ApproxC, true, new MCvScalar(255 / j, 0, 0), 2);
+                        j++;
+                    }
+                }
+            }
+
+            foreach ((var contour, var approx) in wireRecord)
+            {
+                CvInvoke.Polylines(doc.Document, contour, true, new MCvScalar(255, 0, 0), 2);
+                CvInvoke.Polylines(doc.Document, approx, true, new MCvScalar(255, 255, 0), 2);
+            }
+
+            using Mat documentUnWarped = new Mat(frame.Size, frame.Depth, frame.NumberOfChannels);
+            CvInvoke.WarpPerspective(doc.D_Untrimmed, documentUnWarped, doc.F_Transformation, frame.Size, warpType: Warp.InverseMap);
+
+            documentUnWarped.CopyTo(frame, doc.F_DocumentMask);
         }
     }
 }

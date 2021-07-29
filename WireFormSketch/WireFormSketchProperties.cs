@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace WireFormSketch
+namespace Wireform.Sketch
 {
-    public class WireFormSketchProperties
+    public class WireformSketchProperties
     {
         /// <summary>
         /// width of document subimage Mat when transformed
