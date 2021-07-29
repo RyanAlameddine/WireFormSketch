@@ -33,14 +33,14 @@ namespace Wireform.Sketch
             this.imageBox1 = new Emgu.CV.UI.ImageBox();
             this.CaptureButton = new System.Windows.Forms.Button();
             this.imageBox2 = new Emgu.CV.UI.ImageBox();
-            this.ValueLowerBound = new System.Windows.Forms.TrackBar();
-            this.ValueUpperBound = new System.Windows.Forms.TrackBar();
-            this.imageBox3 = new Emgu.CV.UI.ImageBox();
+            this.DisplayGroupBox = new System.Windows.Forms.GroupBox();
+            this.WireformButton = new System.Windows.Forms.RadioButton();
+            this.CVDebugbutton = new System.Windows.Forms.RadioButton();
+            this.outputButton = new System.Windows.Forms.RadioButton();
+            this.wireformPanel = new System.Windows.Forms.Panel();
             ((System.ComponentModel.ISupportInitialize)(this.imageBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.imageBox2)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.ValueLowerBound)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.ValueUpperBound)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.imageBox3)).BeginInit();
+            this.DisplayGroupBox.SuspendLayout();
             this.SuspendLayout();
             // 
             // imageBox1
@@ -63,46 +63,74 @@ namespace Wireform.Sketch
             // 
             // imageBox2
             // 
-            this.imageBox2.Location = new System.Drawing.Point(1067, 34);
+            this.imageBox2.Location = new System.Drawing.Point(1081, 472);
             this.imageBox2.Name = "imageBox2";
-            this.imageBox2.Size = new System.Drawing.Size(582, 395);
+            this.imageBox2.Size = new System.Drawing.Size(486, 334);
             this.imageBox2.TabIndex = 4;
             this.imageBox2.TabStop = false;
             // 
-            // ValueLowerBound
+            // DisplayGroupBox
             // 
-            this.ValueLowerBound.Location = new System.Drawing.Point(0, 150);
-            this.ValueLowerBound.Maximum = 255;
-            this.ValueLowerBound.Name = "ValueLowerBound";
-            this.ValueLowerBound.Size = new System.Drawing.Size(130, 56);
-            this.ValueLowerBound.TabIndex = 5;
-            this.ValueLowerBound.Value = 130;
+            this.DisplayGroupBox.Controls.Add(this.WireformButton);
+            this.DisplayGroupBox.Controls.Add(this.CVDebugbutton);
+            this.DisplayGroupBox.Controls.Add(this.outputButton);
+            this.DisplayGroupBox.Location = new System.Drawing.Point(12, 56);
+            this.DisplayGroupBox.Name = "DisplayGroupBox";
+            this.DisplayGroupBox.Size = new System.Drawing.Size(122, 117);
+            this.DisplayGroupBox.TabIndex = 5;
+            this.DisplayGroupBox.TabStop = false;
+            this.DisplayGroupBox.Text = "Display";
             // 
-            // ValueUpperBound
+            // WireformButton
             // 
-            this.ValueUpperBound.Location = new System.Drawing.Point(0, 75);
-            this.ValueUpperBound.Maximum = 255;
-            this.ValueUpperBound.Name = "ValueUpperBound";
-            this.ValueUpperBound.Size = new System.Drawing.Size(130, 56);
-            this.ValueUpperBound.TabIndex = 5;
-            this.ValueUpperBound.Value = 130;
+            this.WireformButton.AutoSize = true;
+            this.WireformButton.Location = new System.Drawing.Point(3, 53);
+            this.WireformButton.Name = "WireformButton";
+            this.WireformButton.Size = new System.Drawing.Size(93, 24);
+            this.WireformButton.TabIndex = 2;
+            this.WireformButton.TabStop = true;
+            this.WireformButton.Text = "Wireform";
+            this.WireformButton.UseVisualStyleBackColor = true;
+            this.WireformButton.CheckedChanged += new System.EventHandler(this.Display_CheckedChanged);
             // 
-            // imageBox3
+            // CVDebugbutton
             // 
-            this.imageBox3.Location = new System.Drawing.Point(1244, 483);
-            this.imageBox3.Name = "imageBox3";
-            this.imageBox3.Size = new System.Drawing.Size(374, 183);
-            this.imageBox3.TabIndex = 2;
-            this.imageBox3.TabStop = false;
+            this.CVDebugbutton.AutoSize = true;
+            this.CVDebugbutton.Location = new System.Drawing.Point(3, 83);
+            this.CVDebugbutton.Name = "CVDebugbutton";
+            this.CVDebugbutton.Size = new System.Drawing.Size(95, 24);
+            this.CVDebugbutton.TabIndex = 1;
+            this.CVDebugbutton.TabStop = true;
+            this.CVDebugbutton.Text = "Cv Debug";
+            this.CVDebugbutton.UseVisualStyleBackColor = true;
+            this.CVDebugbutton.CheckedChanged += new System.EventHandler(this.Display_CheckedChanged);
+            // 
+            // outputButton
+            // 
+            this.outputButton.AutoSize = true;
+            this.outputButton.Location = new System.Drawing.Point(3, 23);
+            this.outputButton.Name = "outputButton";
+            this.outputButton.Size = new System.Drawing.Size(76, 24);
+            this.outputButton.TabIndex = 0;
+            this.outputButton.TabStop = true;
+            this.outputButton.Text = "Output";
+            this.outputButton.UseVisualStyleBackColor = true;
+            this.outputButton.CheckedChanged += new System.EventHandler(this.Display_CheckedChanged);
+            // 
+            // wireformPanel
+            // 
+            this.wireformPanel.Location = new System.Drawing.Point(1067, 21);
+            this.wireformPanel.Name = "wireformPanel";
+            this.wireformPanel.Size = new System.Drawing.Size(703, 445);
+            this.wireformPanel.TabIndex = 6;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1661, 918);
-            this.Controls.Add(this.imageBox3);
-            this.Controls.Add(this.ValueUpperBound);
-            this.Controls.Add(this.ValueLowerBound);
+            this.ClientSize = new System.Drawing.Size(1782, 853);
+            this.Controls.Add(this.wireformPanel);
+            this.Controls.Add(this.DisplayGroupBox);
             this.Controls.Add(this.imageBox2);
             this.Controls.Add(this.CaptureButton);
             this.Controls.Add(this.imageBox1);
@@ -112,11 +140,9 @@ namespace Wireform.Sketch
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.imageBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.imageBox2)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.ValueLowerBound)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.ValueUpperBound)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.imageBox3)).EndInit();
+            this.DisplayGroupBox.ResumeLayout(false);
+            this.DisplayGroupBox.PerformLayout();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
@@ -124,10 +150,12 @@ namespace Wireform.Sketch
 
         private Emgu.CV.UI.ImageBox imageBox1;
         private System.Windows.Forms.Button CaptureButton;
-        private System.Windows.Forms.TrackBar ValueLowerBound;
         private Emgu.CV.UI.ImageBox imageBox2;
-        private System.Windows.Forms.TrackBar ValueUpperBound;
-        private Emgu.CV.UI.ImageBox imageBox3;
+        private System.Windows.Forms.GroupBox DisplayGroupBox;
+        private System.Windows.Forms.RadioButton WireformButton;
+        private System.Windows.Forms.RadioButton CVDebugbutton;
+        private System.Windows.Forms.RadioButton outputButton;
+        private System.Windows.Forms.Panel wireformPanel;
     }
 }
 

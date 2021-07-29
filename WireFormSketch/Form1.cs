@@ -23,7 +23,9 @@ namespace Wireform.Sketch
 
         readonly WireformSketch sketcher = new WireformSketch(new WireformSketchProperties()
         {
-            DebugDrawWireform = true
+            
+            //DebugDrawWireform = true,
+            //DebugDrawCv = true
         });
 
         private void Form1_Load(object sender, EventArgs e)
@@ -36,6 +38,7 @@ namespace Wireform.Sketch
             Application.Idle += LoadFrame;
         }
 
+        bool captureWireform = false;
         private void LoadFrame(object sender, EventArgs e)
         {
             //load a frame from the camera
@@ -47,26 +50,25 @@ namespace Wireform.Sketch
                 return;
             }
 
-            sketcher.ProcessFrame(frame, false);
+            sketcher.ProcessFrame(frame, captureWireform);
+            captureWireform = false;
 
             SetImageBox(imageBox1, frame);
         }
 
-        private void CaptureButton_Click(object sender, EventArgs e)
-        {
-            //load a frame from the camera
-            using Mat frame = capture.QueryFrame();
-            if (frame == null) return;
-
-            sketcher.ProcessFrame(frame, true);
-
-            SetImageBox(imageBox1, frame);
-        }
+        private void CaptureButton_Click(object sender, EventArgs e) => captureWireform = true;
 
         void SetImageBox(ImageBox imageBox, Mat image)
         {
             imageBox.Image?.Dispose();
             imageBox.Image = image;
+        }
+
+        private void Display_CheckedChanged(object sender, EventArgs e)
+        {
+            sketcher.Props.DrawOutput = outputButton.Checked;
+            sketcher.Props.DebugDrawCv = CVDebugbutton.Checked;
+            sketcher.Props.DebugDrawWireform = WireformButton.Checked;
         }
     }
 

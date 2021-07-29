@@ -92,5 +92,7 @@ namespace Wireform.Sketch
             while (e1.MoveNext() && e2.MoveNext() && e3.MoveNext())
                 yield return (e1.Current, e2.Current, e3.Current);
         }
+
+        public static MCvScalar ToMCvScalar(this Color color) => new MCvScalar(color.B, color.G, color.R, color.A);
     }
 }

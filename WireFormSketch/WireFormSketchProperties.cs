@@ -92,7 +92,26 @@ namespace Wireform.Sketch
         /// The amount of pixels away from a gatePin a wire can be before it snaps to that pin
         /// </summary>
         public double GatePinSnapRange { get; set; } = 100;
+
+        /// <summary>
+        /// If true, will draw contour object outlines, positions, and gate traits.
+        /// </summary>
         public bool DebugDrawCv { get; set; } = false;
+
+        /// <summary>
+        /// If true, will draw output confirming what the wireform library has processed about the cv data.
+        /// Also displays connection information.
+        /// </summary>
         public bool DebugDrawWireform { get; set; } = false;
+
+        /// <summary>
+        /// If true, will draw the regular output onto the document mat on the frame.
+        /// </summary>
+        public bool DrawOutput { get; set; } = true;
+
+        public BitColors BitColors { get; set; }
+            = new BitColors(Error: new MCvScalar(0, 0, 255/3), Nothing: new MCvScalar(105, 105, 105), One: new MCvScalar(180, 40, 199), Zero: new MCvScalar(94, 27, 66));
     }
+
+    public record BitColors(MCvScalar Error, MCvScalar Nothing, MCvScalar One, MCvScalar Zero);
 }

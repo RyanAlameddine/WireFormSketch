@@ -13,6 +13,7 @@ using Wireform.Circuitry.Data;
 using Wireform.Circuitry.Utils;
 using Wireform.MathUtils;
 using Wireform.Circuitry;
+using Wireform.Circuitry.Data.Bits;
 
 namespace Wireform.Sketch
 {
@@ -23,12 +24,6 @@ namespace Wireform.Sketch
         {
             Props = properties;
             _ = GateCollection.GatePaths; //to temporarily fix a bug in wireform 
-            //gateRegistries = new List<GateFitnessFunc>()
-            //{
-            //    AndGate,
-            //    NotGate,
-            //    OrGate
-            //};
         }
 
         static readonly Dictionary<GateTraits, string> gatePaths = new()
@@ -43,9 +38,15 @@ namespace Wireform.Sketch
             { GateTraits.XNor, "Logic/XNOR" },
         };
 
+        readonly BoardStack boardStack = new BoardStack(new DebugSaver());
+
         readonly List<(GateTraits gate, ContourData contourData)> gateRecord = new();
         readonly List<(Point[] contour, Point[] approx)> wireRecord = new();
-        readonly BoardStack boardStack = new BoardStack(new DebugSaver());
+
+        /// <summary>
+        /// Each index here corresponds to an index in <see cref="wireRecord"/>
+        /// </summary>
+        readonly List<WireLine> wirePairs = new();
 
         /// <summary>
         /// The main function of this library. 
@@ -55,14 +56,11 @@ namespace Wireform.Sketch
         /// <param name="readCircuit">Whether or not gates/wires should be read on this frame.</param>
         public string ProcessFrame(Mat frame, bool readCircuit)
         {
-
             var docRet = FindDocument(frame);
 
             if (docRet.IsT0) return docRet.AsT0; //if error message, return error
             using DocumentData doc = docRet.AsT1; //get document data
-            //(Mat document, Mat f_DocumentMask, Mat f_Transformation) = documentData;
-
-
+            
             if (readCircuit)
             {
                 string gateError = FindGates(doc);
@@ -72,6 +70,8 @@ namespace Wireform.Sketch
                 if (wireError is not null) return wireError; //if get error message, return error
 
                 LoadWireform();
+
+                boardStack.CurrentState.Propogate();
             }
 
             DrawOutput(frame, doc);
@@ -300,6 +300,7 @@ namespace Wireform.Sketch
             CvInvoke.FindContours(d_wireMask, d_wireContours, d_wireHierarchy, RetrType.External, ChainApproxMethod.ChainApproxSimple);
 
             wireRecord.Clear();
+            wirePairs.Clear();
             for(int i = 0; i < d_wireContours.Size; i++)
             {
                 using VectorOfPoint approx = new VectorOfPoint();
@@ -344,16 +345,26 @@ namespace Wireform.Sketch
 
                 if (index == -1) continue;
 
-                (Point point, int wireIndex, int indexInWire) closest = wirePoints.ElementAt(index);
+                (_, int wireIndex, int indexInWire) = wirePoints.ElementAt(index);
 
-                wireRecord[closest.wireIndex].approx[closest.indexInWire] = pin.StartPoint.ToPoint();
+                wireRecord[wireIndex].approx[indexInWire] = pin.StartPoint.ToPoint();
             }
 
+            //register wires and add pairs
             state.Wires.AddRange(wireRecord.SelectMany(ToWire));
+            for(int i = 0; i < wireRecord.Count; i++)
+            {
+                var wires = ToWire(wireRecord[i]);
+                wirePairs.Add(wires[0]);
+                state.Wires.AddRange(wires);
+            }
             state.Wires.ForEach(wire => wire.AddConnections(state.Connections));
             
         }
 
+        /// <summary>
+        /// Converts a wire data object to a set of wires
+        /// </summary>
         private List<WireLine> ToWire((Point[] contour, Point[] approx) wireData)
         {
             (_, Point[] approx) = wireData;
@@ -435,6 +446,7 @@ namespace Wireform.Sketch
                     CvInvoke.Polylines(doc.Document, approx, true, new MCvScalar(255, 255, 0), 2);
                 }
             }
+
             if (Props.DebugDrawWireform)
             {
                 
@@ -460,6 +472,27 @@ namespace Wireform.Sketch
                 foreach (var wire in boardStack.CurrentState.Wires)
                 {
                     CvInvoke.Line(doc.Document, wire.StartPoint.ToPoint(), wire.EndPoint.ToPoint(), new MCvScalar(100, 100, 100), 3);
+                }
+            }
+
+            if (Props.DrawOutput)
+            {
+                for(int i = 0; i < wirePairs.Count; i++)
+                {
+                    WireLine wire = wirePairs[i];
+                    (Point[] contour, _) = wireRecord[i];
+                    MCvScalar color = wire.Values[0].Selected switch
+                    {
+                        BitValue.Error   => Props.BitColors.Error,
+                        BitValue.Nothing => Props.BitColors.Nothing,
+                        BitValue.One     => Props.BitColors.One,
+                        BitValue.Zero    => Props.BitColors.Zero,
+
+                        _ => throw new Exception("BitValue undefined")
+                    }; 
+
+                    using VectorOfPoint cont = new VectorOfPoint(contour);
+                    CvInvoke.FillPoly(doc.Document, cont, color);
                 }
             }
 
