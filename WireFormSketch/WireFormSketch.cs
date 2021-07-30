@@ -28,6 +28,7 @@ namespace Wireform.Sketch
 
         static readonly Dictionary<GateTraits, string> gatePaths = new()
         {
+            { GateTraits.Tunnel, "Tunnel" },
             { GateTraits.Bit, "BitSource" },
             { GateTraits.And, "Logic/AND" },
             { GateTraits.Or , "Logic/OR"  },
@@ -227,42 +228,66 @@ namespace Wireform.Sketch
             {
                 int height = modifier.BoundingRect.Height;
                 int width = modifier.BoundingRect.Width;
-                bool isXorBar = height > 1.2 * width;
+                bool isTunnel = width > 1.3 * height;// && modifier.ApproxC.Length <= 4;
+                bool isXorBar = height > 1.3 * width;// && modifier.ApproxC.Length > 4;
                 bool isBitPin = Math.Abs(height - width) < Props.BitSourceSizeTolerance && width * height > 100;
                 if (isXorBar)
                 {
-                    //a point that should be near the centroid of the gate to link it to. For example:
-                    //|  |- - -\
-                    //|  | x o |    (x is the linker point, o is the centroid of the contour
-                    //|  |- - -/
-                
-                    Point linkerPoint = new Point((int) (modifier.Centroid.X + modifier.BoundingRect.Height), (int)modifier.Centroid.Y);
+                    int minDistIndex = FindLinker(modifier, gateRecord.Select(g => g.contourData.Centroid.ToPoint()).ToArray(), true); //.Where(g => !g.gate.HasFlag(GateTraits.XorBar))
+                    if (minDistIndex == -1) continue;
 
-                    //the maximum allowed distance from the linker point
-                    double maxDistSqr = modifier.BoundingRect.Height * modifier.BoundingRect.Height;
-
-                    //find the centroid of the gate that is closest to our linker point
-                    int minDistIndex = gateRecord //.Where(g => !g.gate.HasFlag(GateTraits.XorBar))
-                        .Select(g => g.contourData.Centroid.ToPoint())
-                        .ToArray()
-                        .ClosestInRange(modifier.Centroid.ToPoint(), maxDistSqr);
-
-                    if(minDistIndex == -1) continue;
-
-                    //add xor flag and update bounding rect
+                    //add xor flag and union bounding rects
                     (GateTraits minGate, ContourData minCont) = gateRecord[minDistIndex];
-
                     Rectangle unionedRect = minCont.BoundingRect.Union(modifier.BoundingRect);
-                    gateRecord[minDistIndex] = (minGate | GateTraits.XorBar, new ContourData(minCont.Contour, minCont.ApproxC, unionedRect, minCont.Children, minCont.Centroid, minCont.ArcLength, minCont.LeftEdge));
+                    gateRecord[minDistIndex] = (minGate | GateTraits.Bar, new ContourData(minCont.Contour, minCont.ApproxC, unionedRect, minCont.Children, minCont.Centroid, minCont.ArcLength, minCont.LeftEdge));
 
                 } 
                 else if (isBitPin)
                 {
                     gateRecord.Add((GateTraits.Bit, modifier));
-                }                            
+                }
+                else if (isTunnel)
+                {
+                    //find all other modifiers and find closest modifier
+                    var modifiersWithoutMe = modifiers.Where(m => m.Contour != modifier.Contour);
+                    int minDistIndex = FindLinker(modifier, modifiersWithoutMe
+                        .Select(m => m.Centroid.ToPoint())
+                        .ToArray(), false); //.Where(g => !g.gate.HasFlag(GateTraits.XorBar))
+                    if (minDistIndex == -1) continue;
+
+                    var targetModifier = modifiersWithoutMe.ElementAt(minDistIndex);
+                    if (modifier.Centroid.Y > targetModifier.Centroid.Y) continue;
+
+                    //add a tunnel gate with the two unioned
+                    Rectangle unionedRect = targetModifier.BoundingRect.Union(modifier.BoundingRect);
+                    gateRecord.Add((GateTraits.Tunnel, new ContourData(targetModifier.Contour, targetModifier.ApproxC, unionedRect, targetModifier.Children, targetModifier.Centroid, targetModifier.ArcLength, targetModifier.LeftEdge)));
+
+                }
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Finds the nearest point in the given linker direction. See comment inside for full explanation.
+        /// </summary>
+        private int FindLinker(ContourData modifier, Point[] targetPoints, bool vertical)
+        {
+            //a point that should be near the centroid of the gate to link it to. For example:
+            //|  |- - -\
+            //|  | x o |    (x is the linker point, o is the centroid of the contour
+            //|  |- - -/
+
+            //Point linkerPoint = new Point((int)modifier.Centroid.X + (vertical ? modifier.BoundingRect.Height : 0), (int)modifier.Centroid.Y + (!vertical ? modifier.BoundingRect.Width : 0));
+
+            //the maximum allowed distance from the linker point
+            double maxDistSqr = vertical ? Math.Pow(modifier.BoundingRect.Height, 2) : Math.Pow(modifier.BoundingRect.Width, 2);
+            
+
+            //find the centroid of the gate that is closest to our linker point
+            int minDistIndex = targetPoints.ClosestInRange(modifier.Centroid.ToPoint(), maxDistSqr*1.5);
+
+            return minDistIndex;
         }
 
         /// <summary>
@@ -357,7 +382,11 @@ namespace Wireform.Sketch
                 wirePairs.Add(wires[0]);
                 state.Wires.AddRange(wires);
             }
-            state.Wires.ForEach(wire => wire.AddConnections(state.Connections));
+
+            //add tunnel wires
+            state.Wires.AddRange(state.Gates.Where(g => g is TunnelGate).Select(g => new WireLine(g.Inputs[0].StartPoint, g.Outputs[0].StartPoint, true)));
+
+             state.Wires.ForEach(wire => wire.AddConnections(state.Connections));
             
         }
 
@@ -391,7 +420,8 @@ namespace Wireform.Sketch
 
             if(gatePaths.TryGetValue(gate, out string path))
             {
-                Gate newGate = GateCollection.CreateGate(path, new Vec2(0, 0));
+
+                Gate newGate = path != "Tunnel" ? GateCollection.CreateGate(path, Vec2.Zero) : new TunnelGate(Vec2.Zero, 0);
 
                 //set gate to center of gate hitbox
                 Vec2 centroid = new Vec2((int)contourData.Centroid.X, (int)contourData.Centroid.Y);
@@ -415,6 +445,14 @@ namespace Wireform.Sketch
                 newGate.LocalHitbox.Y = -contourData.BoundingRect.Height / 2;
                 newGate.LocalHitbox.Width = contourData.BoundingRect.Width;
                 newGate.LocalHitbox.Height = contourData.BoundingRect.Height;
+
+                //special case for tunnel
+                if(gate == GateTraits.Tunnel)
+                {
+                    newGate.Inputs[0].SetPosition(new Vec2(rect.X + rect.Width / 2, rect.Y));
+                    newGate.Outputs[0].SetPosition(new Vec2(rect.X + rect.Width / 2, rect.Y + rect.Height));
+                }
+
                 return newGate;
             }
             return null;

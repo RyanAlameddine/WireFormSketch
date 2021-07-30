@@ -18,18 +18,19 @@ namespace Wireform.Sketch
         Dotted               = 0b00000100, ///2 open regions in contour
         FlatLeftEdge         = 0b00001000, ///the left edge is a flat line
         FirstChildTriangular = 0b00010000, ///the leftmost open region is a triangle
-        XorBar               = 0b00100000, ///whether it is to the right of a xor bar
+        Bar                  = 0b00100000, ///whether it is to the right of a xor bar
 
 
-        Bit = FilledIn,
+        Bit    = FilledIn,
+        Tunnel = FilledIn | Bar,
 
         Or  = NotDotted,
-        Xor = Or | XorBar,
+        Xor = Or | Bar,
         And = Or | FlatLeftEdge,
 
 
         NOr  = Dotted,
-        XNor = NOr  | XorBar,
+        XNor = NOr  | Bar,
         NAnd = NOr  | FlatLeftEdge,
         Not  = NAnd | FirstChildTriangular,
 

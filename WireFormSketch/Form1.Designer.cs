@@ -38,16 +38,23 @@ namespace Wireform.Sketch
             this.CVDebugbutton = new System.Windows.Forms.RadioButton();
             this.outputButton = new System.Windows.Forms.RadioButton();
             this.wireformPanel = new System.Windows.Forms.Panel();
+            this.label1 = new System.Windows.Forms.Label();
+            this.DebuggerDisplay = new System.Windows.Forms.GroupBox();
+            this.radioButton1 = new System.Windows.Forms.RadioButton();
+            this.radioButton2 = new System.Windows.Forms.RadioButton();
+            this.radioButton3 = new System.Windows.Forms.RadioButton();
+            this.colorDialog = new System.Windows.Forms.ColorDialog();
             ((System.ComponentModel.ISupportInitialize)(this.imageBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.imageBox2)).BeginInit();
             this.DisplayGroupBox.SuspendLayout();
+            this.DebuggerDisplay.SuspendLayout();
             this.SuspendLayout();
             // 
             // imageBox1
             // 
-            this.imageBox1.Location = new System.Drawing.Point(140, 21);
+            this.imageBox1.Location = new System.Drawing.Point(12, 56);
             this.imageBox1.Name = "imageBox1";
-            this.imageBox1.Size = new System.Drawing.Size(921, 678);
+            this.imageBox1.Size = new System.Drawing.Size(1037, 678);
             this.imageBox1.TabIndex = 2;
             this.imageBox1.TabStop = false;
             // 
@@ -63,7 +70,7 @@ namespace Wireform.Sketch
             // 
             // imageBox2
             // 
-            this.imageBox2.Location = new System.Drawing.Point(1081, 472);
+            this.imageBox2.Location = new System.Drawing.Point(1206, 491);
             this.imageBox2.Name = "imageBox2";
             this.imageBox2.Size = new System.Drawing.Size(486, 334);
             this.imageBox2.TabIndex = 4;
@@ -74,7 +81,7 @@ namespace Wireform.Sketch
             this.DisplayGroupBox.Controls.Add(this.WireformButton);
             this.DisplayGroupBox.Controls.Add(this.CVDebugbutton);
             this.DisplayGroupBox.Controls.Add(this.outputButton);
-            this.DisplayGroupBox.Location = new System.Drawing.Point(12, 56);
+            this.DisplayGroupBox.Location = new System.Drawing.Point(1070, 472);
             this.DisplayGroupBox.Name = "DisplayGroupBox";
             this.DisplayGroupBox.Size = new System.Drawing.Size(122, 117);
             this.DisplayGroupBox.TabIndex = 5;
@@ -124,16 +131,71 @@ namespace Wireform.Sketch
             this.wireformPanel.TabIndex = 6;
             this.wireformPanel.Click += new System.EventHandler(this.wireformPanel_Click);
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(1067, 10);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(254, 20);
+            this.label1.TabIndex = 0;
+            this.label1.Text = "Click on a bitsource here to toggle it!";
+            // 
+            // DebuggerDisplay
+            // 
+            this.DebuggerDisplay.Controls.Add(this.radioButton1);
+            this.DebuggerDisplay.Controls.Add(this.radioButton2);
+            this.DebuggerDisplay.Controls.Add(this.radioButton3);
+            this.DebuggerDisplay.Location = new System.Drawing.Point(1067, 595);
+            this.DebuggerDisplay.Name = "DebuggerDisplay";
+            this.DebuggerDisplay.Size = new System.Drawing.Size(122, 117);
+            this.DebuggerDisplay.TabIndex = 6;
+            this.DebuggerDisplay.TabStop = false;
+            this.DebuggerDisplay.Text = "Debugger";
+            // 
+            // radioButton1
+            // 
+            this.radioButton1.AutoSize = true;
+            this.radioButton1.Location = new System.Drawing.Point(3, 53);
+            this.radioButton1.Name = "radioButton1";
+            this.radioButton1.Size = new System.Drawing.Size(93, 24);
+            this.radioButton1.TabIndex = 2;
+            this.radioButton1.Text = "Wireform";
+            this.radioButton1.UseVisualStyleBackColor = true;
+            // 
+            // radioButton2
+            // 
+            this.radioButton2.AutoSize = true;
+            this.radioButton2.Location = new System.Drawing.Point(3, 83);
+            this.radioButton2.Name = "radioButton2";
+            this.radioButton2.Size = new System.Drawing.Size(95, 24);
+            this.radioButton2.TabIndex = 1;
+            this.radioButton2.Text = "Cv Debug";
+            this.radioButton2.UseVisualStyleBackColor = true;
+            // 
+            // radioButton3
+            // 
+            this.radioButton3.AutoSize = true;
+            this.radioButton3.Checked = true;
+            this.radioButton3.Location = new System.Drawing.Point(3, 23);
+            this.radioButton3.Name = "radioButton3";
+            this.radioButton3.Size = new System.Drawing.Size(76, 24);
+            this.radioButton3.TabIndex = 0;
+            this.radioButton3.TabStop = true;
+            this.radioButton3.Text = "Output";
+            this.radioButton3.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1782, 853);
+            this.Controls.Add(this.DebuggerDisplay);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.wireformPanel);
+            this.Controls.Add(this.imageBox1);
             this.Controls.Add(this.DisplayGroupBox);
             this.Controls.Add(this.imageBox2);
             this.Controls.Add(this.CaptureButton);
-            this.Controls.Add(this.imageBox1);
             this.Location = new System.Drawing.Point(0, 150);
             this.Name = "Form1";
             this.Text = "Form1";
@@ -142,7 +204,10 @@ namespace Wireform.Sketch
             ((System.ComponentModel.ISupportInitialize)(this.imageBox2)).EndInit();
             this.DisplayGroupBox.ResumeLayout(false);
             this.DisplayGroupBox.PerformLayout();
+            this.DebuggerDisplay.ResumeLayout(false);
+            this.DebuggerDisplay.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -156,6 +221,12 @@ namespace Wireform.Sketch
         private System.Windows.Forms.RadioButton CVDebugbutton;
         private System.Windows.Forms.RadioButton outputButton;
         private System.Windows.Forms.Panel wireformPanel;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.GroupBox DebuggerDisplay;
+        private System.Windows.Forms.RadioButton radioButton1;
+        private System.Windows.Forms.RadioButton radioButton2;
+        private System.Windows.Forms.RadioButton radioButton3;
+        private System.Windows.Forms.ColorDialog colorDialog;
     }
 }
 
