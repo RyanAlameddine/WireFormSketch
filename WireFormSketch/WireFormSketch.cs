@@ -38,7 +38,7 @@ namespace Wireform.Sketch
             { GateTraits.XNor, "Logic/XNOR" },
         };
 
-        readonly BoardStack boardStack = new BoardStack(new DebugSaver());
+        public readonly BoardStack boardStack = new BoardStack(new DebugSaver());
 
         readonly List<(GateTraits gate, ContourData contourData)> gateRecord = new();
         readonly List<(Point[] contour, Point[] approx)> wireRecord = new();
@@ -173,16 +173,19 @@ namespace Wireform.Sketch
         /// </summary>
         private string FindGates(DocumentData doc)
         {
-            //find the gates using a threshold
-            using Mat d_Gray = new Mat();
-            CvInvoke.CvtColor(doc.Document, d_Gray, ColorConversion.Bgr2Gray);
+            using Mat d_blurred = doc.Document.Clone();
+            CvInvoke.GaussianBlur(d_blurred, d_blurred, new Size(7, 7), 0);
+            //find the gates using an inrange in hsv
+            using Mat d_hsv = new Mat();
+            CvInvoke.CvtColor(d_blurred, d_hsv, ColorConversion.Bgr2Hsv);
             using Mat d_GateMask = new Mat();
-            CvInvoke.Threshold(d_Gray, d_GateMask, Props.GateThreshold, 255, ThresholdType.BinaryInv);
+            CvInvoke.InRange(d_hsv, (ScalarArray) Props.GateHsvLowerBound, (ScalarArray) Props.GateHsvUpperBound, d_GateMask);
 
             //dilate to increase clarity of shapes detected and minimize chance of disconnect
             using Mat element = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), new Point(-1, -1));
             CvInvoke.Dilate(d_GateMask, d_GateMask, element, new Point(-1, -1), Props.GateDilationCount, BorderType.Constant, new MCvScalar(0, 0, 0));
 
+            Form1.imagebox.SetImageBox(d_GateMask);
 
             //full set of gate contours (including inner contours)
             using VectorOfVectorOfPoint d_gateContours = new VectorOfVectorOfPoint();
@@ -224,7 +227,7 @@ namespace Wireform.Sketch
             {
                 int height = modifier.BoundingRect.Height;
                 int width = modifier.BoundingRect.Width;
-                bool isXorBar = height > 1.5 * width;
+                bool isXorBar = height > 1.2 * width;
                 bool isBitPin = Math.Abs(height - width) < Props.BitSourceSizeTolerance && width * height > 100;
                 if (isXorBar)
                 {
@@ -292,9 +295,6 @@ namespace Wireform.Sketch
             using Mat d_wireMask = new Mat();
             CvInvoke.InRange(d_hsv, (ScalarArray)Props.WireColorLower, (ScalarArray)Props.WireColorUpper, d_wireMask);
 
-            Form1.imagebox.Image?.Dispose();
-            Form1.imagebox.Image = d_wireMask;
-
             using VectorOfVectorOfPoint d_wireContours = new VectorOfVectorOfPoint();
             using Mat d_wireHierarchy = new Mat();
             CvInvoke.FindContours(d_wireMask, d_wireContours, d_wireHierarchy, RetrType.External, ChainApproxMethod.ChainApproxSimple);
@@ -322,7 +322,6 @@ namespace Wireform.Sketch
             state.Wires.Clear();
 
             state.Gates.AddRange(gateRecord.Select(ToGate).Where(g => g is not null));
-            state.Gates.ForEach(x => x.AddConnections(state.Connections));
 
             //TODO: optimize this from n^2 to something more reasonable (quadtree?)
             var allPins = state.Gates.SelectMany(gate => gate.Inputs.Append(gate.Outputs[0]));
@@ -410,6 +409,12 @@ namespace Wireform.Sketch
 
                 newGate.Outputs[0].SetPosition(new Vec2(rect.X + rect.Width, rect.Y + rect.Height / 2));
 
+                newGate.AddConnections(boardStack.CurrentState.Connections);
+
+                newGate.LocalHitbox.X = -contourData.BoundingRect.Width / 2;
+                newGate.LocalHitbox.Y = -contourData.BoundingRect.Height / 2;
+                newGate.LocalHitbox.Width = contourData.BoundingRect.Width;
+                newGate.LocalHitbox.Height = contourData.BoundingRect.Height;
                 return newGate;
             }
             return null;
@@ -467,6 +472,7 @@ namespace Wireform.Sketch
                     {
                         CvInvoke.DrawMarker(doc.Document, new Point((int)output.StartPoint.X, (int)output.StartPoint.Y), new MCvScalar(0, 255, 0), MarkerTypes.Diamond, thickness: 3);
                     }
+                    CvInvoke.Rectangle(doc.Document, new Rectangle((int)gate.HitBox.X, (int)gate.HitBox.Y, (int)gate.HitBox.Width, (int)gate.HitBox.Height), new MCvScalar(100, 100, 100), 2);
                 }
 
                 foreach (var wire in boardStack.CurrentState.Wires)

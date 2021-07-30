@@ -88,7 +88,6 @@ namespace Wireform.Sketch
             this.WireformButton.Name = "WireformButton";
             this.WireformButton.Size = new System.Drawing.Size(93, 24);
             this.WireformButton.TabIndex = 2;
-            this.WireformButton.TabStop = true;
             this.WireformButton.Text = "Wireform";
             this.WireformButton.UseVisualStyleBackColor = true;
             this.WireformButton.CheckedChanged += new System.EventHandler(this.Display_CheckedChanged);
@@ -100,7 +99,6 @@ namespace Wireform.Sketch
             this.CVDebugbutton.Name = "CVDebugbutton";
             this.CVDebugbutton.Size = new System.Drawing.Size(95, 24);
             this.CVDebugbutton.TabIndex = 1;
-            this.CVDebugbutton.TabStop = true;
             this.CVDebugbutton.Text = "Cv Debug";
             this.CVDebugbutton.UseVisualStyleBackColor = true;
             this.CVDebugbutton.CheckedChanged += new System.EventHandler(this.Display_CheckedChanged);
@@ -108,6 +106,7 @@ namespace Wireform.Sketch
             // outputButton
             // 
             this.outputButton.AutoSize = true;
+            this.outputButton.Checked = true;
             this.outputButton.Location = new System.Drawing.Point(3, 23);
             this.outputButton.Name = "outputButton";
             this.outputButton.Size = new System.Drawing.Size(76, 24);
@@ -123,6 +122,7 @@ namespace Wireform.Sketch
             this.wireformPanel.Name = "wireformPanel";
             this.wireformPanel.Size = new System.Drawing.Size(703, 445);
             this.wireformPanel.TabIndex = 6;
+            this.wireformPanel.Click += new System.EventHandler(this.wireformPanel_Click);
             // 
             // Form1
             // 

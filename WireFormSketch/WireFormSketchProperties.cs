@@ -43,12 +43,14 @@ namespace Wireform.Sketch
         /// </summary>
         public MCvScalar DocumentUpperBound { get; set; } = new MCvScalar(255, 50, 255);
 
-        /// <summary>
-        /// The upper bound for lightness of pixel before it is considered a gate pixel.
-        /// </summary>
-        public double GateThreshold { get; set; } = 110;
+        ///// <summary>
+        ///// The upper bound for lightness of pixel before it is considered a gate pixel.
+        ///// </summary>
+        //public double GateThreshold { get; set; } = 110;
 
 
+        public MCvScalar GateHsvLowerBound { get; set; } = new MCvScalar(0, 0, 0);
+        public MCvScalar GateHsvUpperBound { get; set; } = new MCvScalar(255, 255, 100);
 
         /// <summary>
         /// the amount of dilation to happen on the detected gate contours
@@ -91,7 +93,7 @@ namespace Wireform.Sketch
         /// <summary>
         /// The amount of pixels away from a gatePin a wire can be before it snaps to that pin
         /// </summary>
-        public double GatePinSnapRange { get; set; } = 100;
+        public double GatePinSnapRange { get; set; } = 200;
 
         /// <summary>
         /// If true, will draw contour object outlines, positions, and gate traits.
@@ -109,6 +111,9 @@ namespace Wireform.Sketch
         /// </summary>
         public bool DrawOutput { get; set; } = true;
 
+        /// <summary>
+        /// The colors of each bit.
+        /// </summary>
         public BitColors BitColors { get; set; }
             = new BitColors(Error: new MCvScalar(0, 0, 255/3), Nothing: new MCvScalar(105, 105, 105), One: new MCvScalar(180, 40, 199), Zero: new MCvScalar(94, 27, 66));
     }

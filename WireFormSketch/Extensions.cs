@@ -1,5 +1,6 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Structure;
+using Emgu.CV.UI;
 using Emgu.CV.Util;
 using System;
 using System.Collections.Generic;
@@ -94,5 +95,11 @@ namespace Wireform.Sketch
         }
 
         public static MCvScalar ToMCvScalar(this Color color) => new MCvScalar(color.B, color.G, color.R, color.A);
+
+        public static void SetImageBox(this ImageBox imageBox, Mat image)
+        {
+            imageBox.Image?.Dispose();
+            imageBox.Image = image;
+        }
     }
 }
