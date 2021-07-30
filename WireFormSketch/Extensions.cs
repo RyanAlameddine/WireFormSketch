@@ -15,6 +15,8 @@ namespace Wireform.Sketch
     {
         public static (Point topLeft, Point topRight, Point bottomLeft, Point bottomRight) GetCornerPoints(this Point[] points)
         {
+            if (points.Length < 2) return default;
+
             Point topLeft;
             Point topRight;
             Point bottomLeft;
@@ -94,7 +96,41 @@ namespace Wireform.Sketch
                 yield return (e1.Current, e2.Current, e3.Current);
         }
 
-        public static MCvScalar ToMCvScalar(this Color color) => new MCvScalar(color.B, color.G, color.R, color.A);
+        //public static MCvScalar ToMCvScalar(this Color color) => new MCvScalar(color.B, color.G, color.R, color.A);
+        //public static MCvScalar ToMCvScalarHsv(this Color color) => new MCvScalar(color.GetHue(), color.GetSaturation(), color.GetBrightness());
+
+        public static Color ColorFromHSV(this MCvScalar color)
+        {
+
+            double hue = color.V0 * 2d;
+            double saturation = color.V1 / 255d;
+            double value = color.V2 / 255d;
+            int hi = Convert.ToInt32(Math.Floor(hue / 60)) % 6;
+            double f = hue / 60 - Math.Floor(hue / 60);
+
+            value *= 255;
+            int v = Convert.ToInt32(value);
+            int p = Convert.ToInt32(value * (1 - saturation));
+            int q = Convert.ToInt32(value * (1 - f * saturation));
+            int t = Convert.ToInt32(value * (1 - (1 - f) * saturation));
+
+            if (hi == 0)
+                return Color.FromArgb(v, t, p);
+            else if (hi == 1)
+                return Color.FromArgb(q, v, p);
+            else if (hi == 2)
+                return Color.FromArgb(p, v, t);
+            else if (hi == 3)
+                return Color.FromArgb(p, q, v);
+            else if (hi == 4)
+                return Color.FromArgb(t, p, v);
+            else
+                return Color.FromArgb(v, p, q);
+        }
+
+
+
+        public static Color ToColor(this MCvScalar color) => Color.FromArgb((int)color.V2, (int)color.V1, (int)color.V0);
 
         public static void SetImageBox(this ImageBox imageBox, Mat image)
         {

@@ -36,21 +36,21 @@ namespace Wireform.Sketch
         /// <summary>
         /// The lower bound color (HSV) for the document detection InRange.
         /// </summary>
-        public MCvScalar DocumentLowerBound { get; set; } = new MCvScalar(0, 0, 100);
+        public MCvScalar DocumentHsvLowerBound { get; set; } = new MCvScalar(0, 0, 100);
 
         /// <summary>
         /// The upper bound color (HSV) for the document detection InRange.
         /// </summary>
-        public MCvScalar DocumentUpperBound { get; set; } = new MCvScalar(255, 50, 255);
+        public MCvScalar DocumentHsvUpperBound { get; set; } = new MCvScalar(180, 50, 255);
 
-        ///// <summary>
-        ///// The upper bound for lightness of pixel before it is considered a gate pixel.
-        ///// </summary>
-        //public double GateThreshold { get; set; } = 110;
-
-
+        /// <summary>
+        /// The lower bound for the gate color dection (hsv).
+        /// </summary>
         public MCvScalar GateHsvLowerBound { get; set; } = new MCvScalar(0, 0, 0);
-        public MCvScalar GateHsvUpperBound { get; set; } = new MCvScalar(255, 255, 100);
+        /// <summary>
+        /// The upper bound for the gate color dection (hsv).
+        /// </summary>
+        public MCvScalar GateHsvUpperBound { get; set; } = new MCvScalar(180, 255, 100);
 
         /// <summary>
         /// the amount of dilation to happen on the detected gate contours
@@ -75,11 +75,11 @@ namespace Wireform.Sketch
         /// <summary>
         /// The lower bound of the wire color detection (hsv).
         /// </summary>
-        public MCvScalar WireColorLower { get; set; } = new MCvScalar(160 / 2, 255 / 4, 255 / 2);
+        public MCvScalar WireHsvLowerBound { get; set; } = new MCvScalar(160 / 2, 255 / 4, 255 / 2);
         /// <summary>
         /// The upper bound of the wire color detection (hsv).
         /// </summary>
-        public MCvScalar WireColorUpper { get; set; } = new MCvScalar(274 / 2, 255, 255);
+        public MCvScalar WireHsvUpperBound { get; set; } = new MCvScalar(274 / 2, 255, 255);
 
         /// <summary>
         /// The true (unmodified by arclength) epsilon value to aproximate the wires.

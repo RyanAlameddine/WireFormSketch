@@ -14,6 +14,7 @@ using Wireform.Circuitry.Utils;
 using Wireform.MathUtils;
 using Wireform.Circuitry;
 using Wireform.Circuitry.Data.Bits;
+using Wireform.Circuitry.Gates;
 
 namespace Wireform.Sketch
 {
@@ -100,7 +101,7 @@ namespace Wireform.Sketch
             //in range to detect sheet of paper:
             //in the future: make this a dynamic threshold or canny edge or hough line transform?
             using Mat f_documentMask = new Mat();
-            CvInvoke.InRange(f_hsvFrame, (ScalarArray)Props.DocumentLowerBound, (ScalarArray)Props.DocumentUpperBound, f_documentMask);
+            CvInvoke.InRange(f_hsvFrame, (ScalarArray)Props.DocumentHsvLowerBound, (ScalarArray)Props.DocumentHsvUpperBound, f_documentMask);
 
             using VectorOfVectorOfPoint f_contours = new VectorOfVectorOfPoint();
             using Mat f_hierarchy = new Mat();
@@ -186,7 +187,7 @@ namespace Wireform.Sketch
             using Mat element = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), new Point(-1, -1));
             CvInvoke.Dilate(d_GateMask, d_GateMask, element, new Point(-1, -1), Props.GateDilationCount, BorderType.Constant, new MCvScalar(0, 0, 0));
 
-            Form1.imagebox.SetImageBox(d_GateMask);
+            SketchForm.imagebox.SetImageBox(d_GateMask);
 
             //full set of gate contours (including inner contours)
             using VectorOfVectorOfPoint d_gateContours = new VectorOfVectorOfPoint();
@@ -318,7 +319,7 @@ namespace Wireform.Sketch
             CvInvoke.CvtColor(d_blurred, d_hsv, ColorConversion.Bgr2Hsv);
 
             using Mat d_wireMask = new Mat();
-            CvInvoke.InRange(d_hsv, (ScalarArray)Props.WireColorLower, (ScalarArray)Props.WireColorUpper, d_wireMask);
+            CvInvoke.InRange(d_hsv, (ScalarArray)Props.WireHsvLowerBound, (ScalarArray)Props.WireHsvUpperBound, d_wireMask);
 
             using VectorOfVectorOfPoint d_wireContours = new VectorOfVectorOfPoint();
             using Mat d_wireHierarchy = new Mat();
@@ -420,8 +421,9 @@ namespace Wireform.Sketch
 
             if(gatePaths.TryGetValue(gate, out string path))
             {
-
                 Gate newGate = path != "Tunnel" ? GateCollection.CreateGate(path, Vec2.Zero) : new TunnelGate(Vec2.Zero, 0);
+
+                if (newGate is BitSource source) source.currentValue = BitValue.Zero;
 
                 //set gate to center of gate hitbox
                 Vec2 centroid = new Vec2((int)contourData.Centroid.X, (int)contourData.Centroid.Y);
