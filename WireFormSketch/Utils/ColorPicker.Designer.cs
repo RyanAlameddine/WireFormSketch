@@ -1,5 +1,5 @@
 ﻿
-namespace Wireform.Sketch
+namespace Wireform.Sketch.Utils
 {
     partial class ColorPicker
     {
@@ -53,7 +53,7 @@ namespace Wireform.Sketch
             this.hueBar.Name = "hueBar";
             this.hueBar.Size = new System.Drawing.Size(130, 56);
             this.hueBar.TabIndex = 1;
-            this.hueBar.Scroll += new System.EventHandler(this.colorChange_Scroll);
+            this.hueBar.Scroll += new System.EventHandler(this.ColorChange_Scroll);
             // 
             // colorPanel
             // 
@@ -89,7 +89,7 @@ namespace Wireform.Sketch
             this.saturationBar.Name = "saturationBar";
             this.saturationBar.Size = new System.Drawing.Size(130, 56);
             this.saturationBar.TabIndex = 1;
-            this.saturationBar.Scroll += new System.EventHandler(this.colorChange_Scroll);
+            this.saturationBar.Scroll += new System.EventHandler(this.ColorChange_Scroll);
             // 
             // valuePanel
             // 
@@ -108,7 +108,7 @@ namespace Wireform.Sketch
             this.valueBar.Name = "valueBar";
             this.valueBar.Size = new System.Drawing.Size(130, 56);
             this.valueBar.TabIndex = 1;
-            this.valueBar.Scroll += new System.EventHandler(this.colorChange_Scroll);
+            this.valueBar.Scroll += new System.EventHandler(this.ColorChange_Scroll);
             // 
             // okButton
             // 
@@ -118,7 +118,7 @@ namespace Wireform.Sketch
             this.okButton.TabIndex = 6;
             this.okButton.Text = "OK";
             this.okButton.UseVisualStyleBackColor = true;
-            this.okButton.Click += new System.EventHandler(this.okButton_Click);
+            this.okButton.Click += new System.EventHandler(this.OkButton_Click);
             // 
             // cancelButton
             // 
@@ -128,7 +128,7 @@ namespace Wireform.Sketch
             this.cancelButton.TabIndex = 7;
             this.cancelButton.Text = "Cancel";
             this.cancelButton.UseVisualStyleBackColor = true;
-            this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
+            this.cancelButton.Click += new System.EventHandler(this.CancelButton_Click);
             // 
             // ColorPicker
             // 

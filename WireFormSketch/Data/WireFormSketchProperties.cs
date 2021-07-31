@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Wireform.Sketch
+namespace Wireform.Sketch.Data
 {
     public class WireformSketchProperties
     {

@@ -7,8 +7,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using Wireform.Sketch.Utils;
 
-namespace Wireform.Sketch
+namespace Wireform.Sketch.Data
 {
     public readonly struct ContourData : IComparable<ContourData>
     {

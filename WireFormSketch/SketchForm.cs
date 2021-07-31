@@ -18,6 +18,9 @@ using Wireform.Circuitry.Gates;
 using Wireform.Circuitry.Utils;
 using Wireform.GraphicsUtils;
 using Wireform.MathUtils.Collision;
+using Wireform.Sketch.Data;
+using Wireform.Sketch.Utils;
+using Wireform.Sketch.WireformExtras;
 
 namespace Wireform.Sketch
 {
@@ -29,7 +32,7 @@ namespace Wireform.Sketch
             InitializeComponent();
         }
 
-        public static ImageBox imagebox { get; private set; }
+        public static ImageBox Imagebox { get; private set; }
 
         readonly WireformSketch sketcher = new WireformSketch(new WireformSketchProperties()
         {
@@ -41,10 +44,10 @@ namespace Wireform.Sketch
         private void Form1_Load(object sender, EventArgs e)
         {
             capture = new VideoCapture(1);
-            exposureBar_Scroll(this, null);
+            ExposureBar_Scroll(this, null);
 
             //set properties
-            imagebox = imageBox2;
+            Imagebox = imageBox2;
             capture.Set(CapProp.FrameWidth, 1280);
             capture.Set(CapProp.FrameHeight, 720);
 
@@ -89,7 +92,7 @@ namespace Wireform.Sketch
             imageBox1.SetImageBox(frame);
         }
 
-        private void wireformPanel_Click(object sender, EventArgs e)
+        private void WireformPanel_Click(object sender, EventArgs e)
         {
             var args = (e as MouseEventArgs);
             Point position = args.Location;
@@ -170,40 +173,40 @@ namespace Wireform.Sketch
             sketcher.Props.DebugDrawWireform = WireformButton.Checked;
         }
 
-        private void exposureBar_Scroll(object sender, EventArgs e)
+        private void ExposureBar_Scroll(object sender, EventArgs e)
             => capture.Set(CapProp.Exposure, exposureBar.Value);
 
         public MCvScalar dialogColor = new MCvScalar();
         /// <summary>
         /// Loads a color from the dialog and returns a new one
         /// </summary>
-        private MCvScalar getColorProperty(MCvScalar currentColor, Panel panel)
+        private MCvScalar GetColorProperty(MCvScalar currentColor, Panel panel)
         {
             ColorPicker colorPicker = new ColorPicker(this);
             colorPicker.DisplayAsDialog(currentColor);
             panel.BackColor = dialogColor.ColorFromHSV();
             return dialogColor;
         }
-        private void documentLowerBound_Click(object sender, EventArgs e)
-            => sketcher.Props.DocumentHsvLowerBound = getColorProperty(sketcher.Props.DocumentHsvLowerBound, documentLowerBound);
-        private void documentUpperBound_Click(object sender, EventArgs e)
-            => sketcher.Props.DocumentHsvUpperBound = getColorProperty(sketcher.Props.DocumentHsvUpperBound, documentUpperBound);
-        private void gateLowerBound_Click(object sender, EventArgs e)
-            => sketcher.Props.GateHsvLowerBound = getColorProperty(sketcher.Props.GateHsvLowerBound, gateLowerBound);
-        private void gateUpperBound_Click(object sender, EventArgs e)
-            => sketcher.Props.GateHsvUpperBound = getColorProperty(sketcher.Props.GateHsvUpperBound, gateUpperBound);
-        private void wireLowerBound_Click(object sender, EventArgs e)
-            => sketcher.Props.WireHsvLowerBound = getColorProperty(sketcher.Props.WireHsvLowerBound, wireLowerBound);
-        private void wireUpperBound_Click(object sender, EventArgs e)
-            => sketcher.Props.WireHsvUpperBound = getColorProperty(sketcher.Props.WireHsvUpperBound, wireUpperBound);
-        private void onePanel_Click(object sender, EventArgs e)
-            => sketcher.Props.BitColors = sketcher.Props.BitColors with { One = getColorProperty(sketcher.Props.BitColors.One, onePanel) };
-        private void zeroPanel_Click(object sender, EventArgs e)
-            => sketcher.Props.BitColors = sketcher.Props.BitColors with { Zero = getColorProperty(sketcher.Props.BitColors.Zero, zeroPanel) };
-        private void nothingPanel_Click(object sender, EventArgs e)
-            => sketcher.Props.BitColors = sketcher.Props.BitColors with { Nothing = getColorProperty(sketcher.Props.BitColors.Nothing, nothingPanel) };
-        private void errorPanel_Click(object sender, EventArgs e)
-            => sketcher.Props.BitColors = sketcher.Props.BitColors with { Error = getColorProperty(sketcher.Props.BitColors.Error, errorPanel) };
+        private void DocumentLowerBound_Click(object sender, EventArgs e)
+            => sketcher.Props.DocumentHsvLowerBound = GetColorProperty(sketcher.Props.DocumentHsvLowerBound, documentLowerBound);
+        private void DocumentUpperBound_Click(object sender, EventArgs e)
+            => sketcher.Props.DocumentHsvUpperBound = GetColorProperty(sketcher.Props.DocumentHsvUpperBound, documentUpperBound);
+        private void GateLowerBound_Click(object sender, EventArgs e)
+            => sketcher.Props.GateHsvLowerBound = GetColorProperty(sketcher.Props.GateHsvLowerBound, gateLowerBound);
+        private void GateUpperBound_Click(object sender, EventArgs e)
+            => sketcher.Props.GateHsvUpperBound = GetColorProperty(sketcher.Props.GateHsvUpperBound, gateUpperBound);
+        private void WireLowerBound_Click(object sender, EventArgs e)
+            => sketcher.Props.WireHsvLowerBound = GetColorProperty(sketcher.Props.WireHsvLowerBound, wireLowerBound);
+        private void WireUpperBound_Click(object sender, EventArgs e)
+            => sketcher.Props.WireHsvUpperBound = GetColorProperty(sketcher.Props.WireHsvUpperBound, wireUpperBound);
+        private void OnePanel_Click(object sender, EventArgs e)
+            => sketcher.Props.BitColors = sketcher.Props.BitColors with { One = GetColorProperty(sketcher.Props.BitColors.One, onePanel) };
+        private void ZeroPanel_Click(object sender, EventArgs e)
+            => sketcher.Props.BitColors = sketcher.Props.BitColors with { Zero = GetColorProperty(sketcher.Props.BitColors.Zero, zeroPanel) };
+        private void NothingPanel_Click(object sender, EventArgs e)
+            => sketcher.Props.BitColors = sketcher.Props.BitColors with { Nothing = GetColorProperty(sketcher.Props.BitColors.Nothing, nothingPanel) };
+        private void ErrorPanel_Click(object sender, EventArgs e)
+            => sketcher.Props.BitColors = sketcher.Props.BitColors with { Error = GetColorProperty(sketcher.Props.BitColors.Error, errorPanel) };
 
 
         #endregion Winforms

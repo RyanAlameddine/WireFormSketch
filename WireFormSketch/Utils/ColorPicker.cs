@@ -7,11 +7,11 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
-namespace Wireform.Sketch
+namespace Wireform.Sketch.Utils
 {
     public partial class ColorPicker : Form
     {
-        SketchForm parent;
+        readonly SketchForm parent;
         MCvScalar color;
         public ColorPicker()
         {
@@ -33,17 +33,17 @@ namespace Wireform.Sketch
             parent = sketchForm;
         }
 
-        private void okButton_Click(object sender, EventArgs e)
+        private void OkButton_Click(object sender, EventArgs e)
         {
             colorPanel.BackColor = color.ColorFromHSV();
             parent.dialogColor = color;
             Close();
         }
 
-        private void cancelButton_Click(object sender, EventArgs e)
+        private void CancelButton_Click(object sender, EventArgs e)
             => Close();
 
-        private void colorChange_Scroll(object sender, EventArgs e)
+        private void ColorChange_Scroll(object sender, EventArgs e)
         {
             color = new MCvScalar(hueBar.Value, saturationBar.Value, valueBar.Value);
             colorPanel.BackColor = color.ColorFromHSV();

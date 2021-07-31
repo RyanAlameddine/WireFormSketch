@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using Wireform.MathUtils;
 
-namespace Wireform.Sketch
+namespace Wireform.Sketch.Utils
 {
     static class Extensions
     {

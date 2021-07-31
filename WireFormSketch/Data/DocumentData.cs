@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Wireform.Sketch
+namespace Wireform.Sketch.Data
 {
     /// <summary>
     /// Stores the data and Mats of the document loaded by WireformSketch.FindDocument

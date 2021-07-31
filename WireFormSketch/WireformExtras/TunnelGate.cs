@@ -10,8 +10,11 @@ using Wireform.GraphicsUtils;
 using Wireform.MathUtils;
 using Wireform.MathUtils.Collision;
 
-namespace Wireform.Sketch
+namespace Wireform.Sketch.WireformExtras
 {
+    /// <summary>
+    /// A tunnel gate that lets you jump wires over other wires
+    /// </summary>
     [Gate("Tunnel")]
     class TunnelGate : Gate
     {

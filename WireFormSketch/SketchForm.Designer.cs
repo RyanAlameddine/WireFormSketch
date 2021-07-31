@@ -58,17 +58,17 @@ namespace Wireform.Sketch
             this.documentUpperBound = new System.Windows.Forms.Panel();
             this.documentLowerBound = new System.Windows.Forms.Panel();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
-            this.zeroPanel = new System.Windows.Forms.Panel();
-            this.onePanel = new System.Windows.Forms.Panel();
-            this.nothingPanel = new System.Windows.Forms.Panel();
             this.errorPanel = new System.Windows.Forms.Panel();
-            this.label5 = new System.Windows.Forms.Label();
+            this.label11 = new System.Windows.Forms.Label();
+            this.nothingPanel = new System.Windows.Forms.Panel();
+            this.label10 = new System.Windows.Forms.Label();
+            this.zeroPanel = new System.Windows.Forms.Panel();
+            this.label9 = new System.Windows.Forms.Label();
+            this.onePanel = new System.Windows.Forms.Panel();
             this.label6 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
-            this.label9 = new System.Windows.Forms.Label();
-            this.label10 = new System.Windows.Forms.Label();
-            this.label11 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.imageBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.imageBox2)).BeginInit();
             this.DisplayGroupBox.SuspendLayout();
@@ -79,10 +79,10 @@ namespace Wireform.Sketch
             this.groupBox3.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.groupBox5.SuspendLayout();
+            this.errorPanel.SuspendLayout();
+            this.nothingPanel.SuspendLayout();
             this.zeroPanel.SuspendLayout();
             this.onePanel.SuspendLayout();
-            this.nothingPanel.SuspendLayout();
-            this.errorPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // imageBox1
@@ -90,6 +90,7 @@ namespace Wireform.Sketch
             this.imageBox1.Location = new System.Drawing.Point(12, 56);
             this.imageBox1.Name = "imageBox1";
             this.imageBox1.Size = new System.Drawing.Size(1037, 678);
+            this.imageBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.imageBox1.TabIndex = 2;
             this.imageBox1.TabStop = false;
             // 
@@ -116,9 +117,9 @@ namespace Wireform.Sketch
             this.DisplayGroupBox.Controls.Add(this.WireformButton);
             this.DisplayGroupBox.Controls.Add(this.CVDebugbutton);
             this.DisplayGroupBox.Controls.Add(this.outputButton);
-            this.DisplayGroupBox.Location = new System.Drawing.Point(1070, 472);
+            this.DisplayGroupBox.Location = new System.Drawing.Point(112, 2);
             this.DisplayGroupBox.Name = "DisplayGroupBox";
-            this.DisplayGroupBox.Size = new System.Drawing.Size(122, 117);
+            this.DisplayGroupBox.Size = new System.Drawing.Size(284, 54);
             this.DisplayGroupBox.TabIndex = 5;
             this.DisplayGroupBox.TabStop = false;
             this.DisplayGroupBox.Text = "Display";
@@ -126,7 +127,7 @@ namespace Wireform.Sketch
             // WireformButton
             // 
             this.WireformButton.AutoSize = true;
-            this.WireformButton.Location = new System.Drawing.Point(3, 53);
+            this.WireformButton.Location = new System.Drawing.Point(88, 24);
             this.WireformButton.Name = "WireformButton";
             this.WireformButton.Size = new System.Drawing.Size(93, 24);
             this.WireformButton.TabIndex = 2;
@@ -137,7 +138,7 @@ namespace Wireform.Sketch
             // CVDebugbutton
             // 
             this.CVDebugbutton.AutoSize = true;
-            this.CVDebugbutton.Location = new System.Drawing.Point(3, 83);
+            this.CVDebugbutton.Location = new System.Drawing.Point(187, 24);
             this.CVDebugbutton.Name = "CVDebugbutton";
             this.CVDebugbutton.Size = new System.Drawing.Size(95, 24);
             this.CVDebugbutton.TabIndex = 1;
@@ -149,7 +150,7 @@ namespace Wireform.Sketch
             // 
             this.outputButton.AutoSize = true;
             this.outputButton.Checked = true;
-            this.outputButton.Location = new System.Drawing.Point(3, 23);
+            this.outputButton.Location = new System.Drawing.Point(6, 24);
             this.outputButton.Name = "outputButton";
             this.outputButton.Size = new System.Drawing.Size(76, 24);
             this.outputButton.TabIndex = 0;
@@ -164,7 +165,7 @@ namespace Wireform.Sketch
             this.wireformPanel.Name = "wireformPanel";
             this.wireformPanel.Size = new System.Drawing.Size(703, 445);
             this.wireformPanel.TabIndex = 6;
-            this.wireformPanel.Click += new System.EventHandler(this.wireformPanel_Click);
+            this.wireformPanel.Click += new System.EventHandler(this.WireformPanel_Click);
             // 
             // label1
             // 
@@ -180,9 +181,9 @@ namespace Wireform.Sketch
             this.DebuggerDisplay.Controls.Add(this.radioButton1);
             this.DebuggerDisplay.Controls.Add(this.radioButton2);
             this.DebuggerDisplay.Controls.Add(this.radioButton3);
-            this.DebuggerDisplay.Location = new System.Drawing.Point(1067, 595);
+            this.DebuggerDisplay.Location = new System.Drawing.Point(1067, 472);
             this.DebuggerDisplay.Name = "DebuggerDisplay";
-            this.DebuggerDisplay.Size = new System.Drawing.Size(122, 117);
+            this.DebuggerDisplay.Size = new System.Drawing.Size(122, 344);
             this.DebuggerDisplay.TabIndex = 6;
             this.DebuggerDisplay.TabStop = false;
             this.DebuggerDisplay.Text = "Debugger";
@@ -227,7 +228,7 @@ namespace Wireform.Sketch
             this.exposureBar.Size = new System.Drawing.Size(130, 56);
             this.exposureBar.TabIndex = 7;
             this.exposureBar.Value = -10;
-            this.exposureBar.Scroll += new System.EventHandler(this.exposureBar_Scroll);
+            this.exposureBar.Scroll += new System.EventHandler(this.ExposureBar_Scroll);
             // 
             // groupBox1
             // 
@@ -266,7 +267,7 @@ namespace Wireform.Sketch
             this.gateUpperBound.Name = "gateUpperBound";
             this.gateUpperBound.Size = new System.Drawing.Size(37, 47);
             this.gateUpperBound.TabIndex = 1;
-            this.gateUpperBound.Click += new System.EventHandler(this.gateUpperBound_Click);
+            this.gateUpperBound.Click += new System.EventHandler(this.GateUpperBound_Click);
             // 
             // gateLowerBound
             // 
@@ -275,7 +276,7 @@ namespace Wireform.Sketch
             this.gateLowerBound.Name = "gateLowerBound";
             this.gateLowerBound.Size = new System.Drawing.Size(37, 47);
             this.gateLowerBound.TabIndex = 0;
-            this.gateLowerBound.Click += new System.EventHandler(this.gateLowerBound_Click);
+            this.gateLowerBound.Click += new System.EventHandler(this.GateLowerBound_Click);
             // 
             // groupBox3
             // 
@@ -304,7 +305,7 @@ namespace Wireform.Sketch
             this.wireUpperBound.Name = "wireUpperBound";
             this.wireUpperBound.Size = new System.Drawing.Size(37, 47);
             this.wireUpperBound.TabIndex = 1;
-            this.wireUpperBound.Click += new System.EventHandler(this.wireUpperBound_Click);
+            this.wireUpperBound.Click += new System.EventHandler(this.WireUpperBound_Click);
             // 
             // wireLowerBound
             // 
@@ -313,7 +314,7 @@ namespace Wireform.Sketch
             this.wireLowerBound.Name = "wireLowerBound";
             this.wireLowerBound.Size = new System.Drawing.Size(37, 47);
             this.wireLowerBound.TabIndex = 0;
-            this.wireLowerBound.Click += new System.EventHandler(this.wireLowerBound_Click);
+            this.wireLowerBound.Click += new System.EventHandler(this.WireLowerBound_Click);
             // 
             // groupBox4
             // 
@@ -342,7 +343,7 @@ namespace Wireform.Sketch
             this.documentUpperBound.Name = "documentUpperBound";
             this.documentUpperBound.Size = new System.Drawing.Size(37, 47);
             this.documentUpperBound.TabIndex = 1;
-            this.documentUpperBound.Click += new System.EventHandler(this.documentUpperBound_Click);
+            this.documentUpperBound.Click += new System.EventHandler(this.DocumentUpperBound_Click);
             // 
             // documentLowerBound
             // 
@@ -351,7 +352,7 @@ namespace Wireform.Sketch
             this.documentLowerBound.Name = "documentLowerBound";
             this.documentLowerBound.Size = new System.Drawing.Size(37, 47);
             this.documentLowerBound.TabIndex = 0;
-            this.documentLowerBound.Click += new System.EventHandler(this.documentLowerBound_Click);
+            this.documentLowerBound.Click += new System.EventHandler(this.DocumentLowerBound_Click);
             // 
             // groupBox5
             // 
@@ -366,6 +367,44 @@ namespace Wireform.Sketch
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Wire Colors";
             // 
+            // errorPanel
+            // 
+            this.errorPanel.Controls.Add(this.label11);
+            this.errorPanel.Location = new System.Drawing.Point(135, 26);
+            this.errorPanel.Name = "errorPanel";
+            this.errorPanel.Size = new System.Drawing.Size(37, 47);
+            this.errorPanel.TabIndex = 3;
+            this.errorPanel.Click += new System.EventHandler(this.ErrorPanel_Click);
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(10, 13);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(17, 20);
+            this.label11.TabIndex = 4;
+            this.label11.Text = "E";
+            this.label11.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // nothingPanel
+            // 
+            this.nothingPanel.Controls.Add(this.label10);
+            this.nothingPanel.Location = new System.Drawing.Point(92, 26);
+            this.nothingPanel.Name = "nothingPanel";
+            this.nothingPanel.Size = new System.Drawing.Size(37, 47);
+            this.nothingPanel.TabIndex = 2;
+            this.nothingPanel.Click += new System.EventHandler(this.NothingPanel_Click);
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(9, 13);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(20, 20);
+            this.label10.TabIndex = 3;
+            this.label10.Text = "N";
+            this.label10.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // zeroPanel
             // 
             this.zeroPanel.Controls.Add(this.label9);
@@ -373,7 +412,17 @@ namespace Wireform.Sketch
             this.zeroPanel.Name = "zeroPanel";
             this.zeroPanel.Size = new System.Drawing.Size(37, 47);
             this.zeroPanel.TabIndex = 1;
-            this.zeroPanel.Click += new System.EventHandler(this.zeroPanel_Click);
+            this.zeroPanel.Click += new System.EventHandler(this.ZeroPanel_Click);
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(10, 13);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(17, 20);
+            this.label9.TabIndex = 2;
+            this.label9.Text = "0";
+            this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // onePanel
             // 
@@ -384,35 +433,7 @@ namespace Wireform.Sketch
             this.onePanel.Name = "onePanel";
             this.onePanel.Size = new System.Drawing.Size(37, 47);
             this.onePanel.TabIndex = 0;
-            this.onePanel.Click += new System.EventHandler(this.onePanel_Click);
-            // 
-            // nothingPanel
-            // 
-            this.nothingPanel.Controls.Add(this.label10);
-            this.nothingPanel.Location = new System.Drawing.Point(92, 26);
-            this.nothingPanel.Name = "nothingPanel";
-            this.nothingPanel.Size = new System.Drawing.Size(37, 47);
-            this.nothingPanel.TabIndex = 2;
-            this.nothingPanel.Click += new System.EventHandler(this.nothingPanel_Click);
-            // 
-            // errorPanel
-            // 
-            this.errorPanel.Controls.Add(this.label11);
-            this.errorPanel.Location = new System.Drawing.Point(135, 26);
-            this.errorPanel.Name = "errorPanel";
-            this.errorPanel.Size = new System.Drawing.Size(37, 47);
-            this.errorPanel.TabIndex = 3;
-            this.errorPanel.Click += new System.EventHandler(this.errorPanel_Click);
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(9, 13);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(17, 20);
-            this.label5.TabIndex = 0;
-            this.label5.Text = "1";
-            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.onePanel.Click += new System.EventHandler(this.OnePanel_Click);
             // 
             // label6
             // 
@@ -423,6 +444,16 @@ namespace Wireform.Sketch
             this.label6.TabIndex = 1;
             this.label6.Text = "1";
             this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(9, 13);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(17, 20);
+            this.label5.TabIndex = 0;
+            this.label5.Text = "1";
+            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label7
             // 
@@ -444,41 +475,12 @@ namespace Wireform.Sketch
             this.label8.Text = "1";
             this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(10, 13);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(17, 20);
-            this.label9.TabIndex = 2;
-            this.label9.Text = "0";
-            this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // label10
-            // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(9, 13);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(20, 20);
-            this.label10.TabIndex = 3;
-            this.label10.Text = "N";
-            this.label10.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // label11
-            // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(10, 13);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(17, 20);
-            this.label11.TabIndex = 4;
-            this.label11.Text = "E";
-            this.label11.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
             // SketchForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1782, 828);
+            this.Controls.Add(this.DisplayGroupBox);
             this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
@@ -488,7 +490,6 @@ namespace Wireform.Sketch
             this.Controls.Add(this.label1);
             this.Controls.Add(this.wireformPanel);
             this.Controls.Add(this.imageBox1);
-            this.Controls.Add(this.DisplayGroupBox);
             this.Controls.Add(this.imageBox2);
             this.Controls.Add(this.CaptureButton);
             this.Location = new System.Drawing.Point(0, 150);
@@ -512,14 +513,14 @@ namespace Wireform.Sketch
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
             this.groupBox5.ResumeLayout(false);
+            this.errorPanel.ResumeLayout(false);
+            this.errorPanel.PerformLayout();
+            this.nothingPanel.ResumeLayout(false);
+            this.nothingPanel.PerformLayout();
             this.zeroPanel.ResumeLayout(false);
             this.zeroPanel.PerformLayout();
             this.onePanel.ResumeLayout(false);
             this.onePanel.PerformLayout();
-            this.nothingPanel.ResumeLayout(false);
-            this.nothingPanel.PerformLayout();
-            this.errorPanel.ResumeLayout(false);
-            this.errorPanel.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 

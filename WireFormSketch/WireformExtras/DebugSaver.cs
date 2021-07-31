@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Wireform;
 
-namespace Wireform.Sketch
+namespace Wireform.Sketch.WireformExtras
 {
     internal class DebugSaver : ISaver
     {

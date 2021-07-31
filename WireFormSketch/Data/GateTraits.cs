@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Wireform.Sketch
+namespace Wireform.Sketch.Data
 {
     /// <summary>
     /// The core enum of this algorithm. Defines the traits on which the gates are matched and read.

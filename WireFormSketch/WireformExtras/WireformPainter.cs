@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Wireform.GraphicsUtils;
 using Wireform.MathUtils;
 
-namespace Wireform.Sketch
+namespace Wireform.Sketch.WireformExtras
 {
     /// <summary>
     /// A tool used to draw on the circuit board.

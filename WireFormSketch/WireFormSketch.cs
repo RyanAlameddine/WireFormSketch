@@ -15,6 +15,9 @@ using Wireform.MathUtils;
 using Wireform.Circuitry;
 using Wireform.Circuitry.Data.Bits;
 using Wireform.Circuitry.Gates;
+using Wireform.Sketch.Data;
+using Wireform.Sketch.WireformExtras;
+using Wireform.Sketch.Utils;
 
 namespace Wireform.Sketch
 {
@@ -187,7 +190,7 @@ namespace Wireform.Sketch
             using Mat element = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), new Point(-1, -1));
             CvInvoke.Dilate(d_GateMask, d_GateMask, element, new Point(-1, -1), Props.GateDilationCount, BorderType.Constant, new MCvScalar(0, 0, 0));
 
-            SketchForm.imagebox.SetImageBox(d_GateMask);
+            SketchForm.Imagebox.SetImageBox(d_GateMask);
 
             //full set of gate contours (including inner contours)
             using VectorOfVectorOfPoint d_gateContours = new VectorOfVectorOfPoint();
