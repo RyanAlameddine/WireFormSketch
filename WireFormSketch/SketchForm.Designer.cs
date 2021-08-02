@@ -40,9 +40,7 @@ namespace Wireform.Sketch
             this.wireformPanel = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.DebuggerDisplay = new System.Windows.Forms.GroupBox();
-            this.radioButton1 = new System.Windows.Forms.RadioButton();
-            this.radioButton2 = new System.Windows.Forms.RadioButton();
-            this.radioButton3 = new System.Windows.Forms.RadioButton();
+            this.debuggerDisplayBox = new System.Windows.Forms.ComboBox();
             this.exposureBar = new System.Windows.Forms.TrackBar();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
@@ -69,6 +67,12 @@ namespace Wireform.Sketch
             this.label5 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
+            this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.cameraIdBox = new System.Windows.Forms.ComboBox();
+            this.groupBox7 = new System.Windows.Forms.GroupBox();
+            this.resolutionHeightBox = new System.Windows.Forms.NumericUpDown();
+            this.resolutionWidthBox = new System.Windows.Forms.NumericUpDown();
+            this.label12 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.imageBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.imageBox2)).BeginInit();
             this.DisplayGroupBox.SuspendLayout();
@@ -83,6 +87,10 @@ namespace Wireform.Sketch
             this.nothingPanel.SuspendLayout();
             this.zeroPanel.SuspendLayout();
             this.onePanel.SuspendLayout();
+            this.groupBox6.SuspendLayout();
+            this.groupBox7.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.resolutionHeightBox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.resolutionWidthBox)).BeginInit();
             this.SuspendLayout();
             // 
             // imageBox1
@@ -106,9 +114,10 @@ namespace Wireform.Sketch
             // 
             // imageBox2
             // 
-            this.imageBox2.Location = new System.Drawing.Point(1206, 491);
+            this.imageBox2.Location = new System.Drawing.Point(1067, 528);
             this.imageBox2.Name = "imageBox2";
-            this.imageBox2.Size = new System.Drawing.Size(486, 334);
+            this.imageBox2.Size = new System.Drawing.Size(703, 296);
+            this.imageBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.imageBox2.TabIndex = 4;
             this.imageBox2.TabStop = false;
             // 
@@ -178,51 +187,27 @@ namespace Wireform.Sketch
             // 
             // DebuggerDisplay
             // 
-            this.DebuggerDisplay.Controls.Add(this.radioButton1);
-            this.DebuggerDisplay.Controls.Add(this.radioButton2);
-            this.DebuggerDisplay.Controls.Add(this.radioButton3);
+            this.DebuggerDisplay.Controls.Add(this.debuggerDisplayBox);
             this.DebuggerDisplay.Location = new System.Drawing.Point(1067, 472);
             this.DebuggerDisplay.Name = "DebuggerDisplay";
-            this.DebuggerDisplay.Size = new System.Drawing.Size(122, 344);
+            this.DebuggerDisplay.Size = new System.Drawing.Size(703, 50);
             this.DebuggerDisplay.TabIndex = 6;
             this.DebuggerDisplay.TabStop = false;
             this.DebuggerDisplay.Text = "Debugger";
             // 
-            // radioButton1
+            // debuggerDisplayBox
             // 
-            this.radioButton1.AutoSize = true;
-            this.radioButton1.Location = new System.Drawing.Point(3, 53);
-            this.radioButton1.Name = "radioButton1";
-            this.radioButton1.Size = new System.Drawing.Size(93, 24);
-            this.radioButton1.TabIndex = 2;
-            this.radioButton1.Text = "Wireform";
-            this.radioButton1.UseVisualStyleBackColor = true;
-            // 
-            // radioButton2
-            // 
-            this.radioButton2.AutoSize = true;
-            this.radioButton2.Location = new System.Drawing.Point(3, 83);
-            this.radioButton2.Name = "radioButton2";
-            this.radioButton2.Size = new System.Drawing.Size(95, 24);
-            this.radioButton2.TabIndex = 1;
-            this.radioButton2.Text = "Cv Debug";
-            this.radioButton2.UseVisualStyleBackColor = true;
-            // 
-            // radioButton3
-            // 
-            this.radioButton3.AutoSize = true;
-            this.radioButton3.Checked = true;
-            this.radioButton3.Location = new System.Drawing.Point(3, 23);
-            this.radioButton3.Name = "radioButton3";
-            this.radioButton3.Size = new System.Drawing.Size(76, 24);
-            this.radioButton3.TabIndex = 0;
-            this.radioButton3.TabStop = true;
-            this.radioButton3.Text = "Output";
-            this.radioButton3.UseVisualStyleBackColor = true;
+            this.debuggerDisplayBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.debuggerDisplayBox.FormattingEnabled = true;
+            this.debuggerDisplayBox.Location = new System.Drawing.Point(6, 19);
+            this.debuggerDisplayBox.Name = "debuggerDisplayBox";
+            this.debuggerDisplayBox.Size = new System.Drawing.Size(691, 28);
+            this.debuggerDisplayBox.TabIndex = 3;
+            this.debuggerDisplayBox.SelectedIndexChanged += new System.EventHandler(this.DebuggerDisplayBox_SelectedIndexChanged);
             // 
             // exposureBar
             // 
-            this.exposureBar.Location = new System.Drawing.Point(6, 25);
+            this.exposureBar.Location = new System.Drawing.Point(5, 17);
             this.exposureBar.Minimum = -10;
             this.exposureBar.Name = "exposureBar";
             this.exposureBar.Size = new System.Drawing.Size(130, 56);
@@ -233,9 +218,9 @@ namespace Wireform.Sketch
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.exposureBar);
-            this.groupBox1.Location = new System.Drawing.Point(12, 740);
+            this.groupBox1.Location = new System.Drawing.Point(408, 1);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(137, 82);
+            this.groupBox1.Size = new System.Drawing.Size(137, 62);
             this.groupBox1.TabIndex = 9;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Exposure";
@@ -245,7 +230,7 @@ namespace Wireform.Sketch
             this.groupBox2.Controls.Add(this.label2);
             this.groupBox2.Controls.Add(this.gateUpperBound);
             this.groupBox2.Controls.Add(this.gateLowerBound);
-            this.groupBox2.Location = new System.Drawing.Point(312, 743);
+            this.groupBox2.Location = new System.Drawing.Point(158, 742);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(140, 82);
             this.groupBox2.TabIndex = 10;
@@ -283,7 +268,7 @@ namespace Wireform.Sketch
             this.groupBox3.Controls.Add(this.label3);
             this.groupBox3.Controls.Add(this.wireUpperBound);
             this.groupBox3.Controls.Add(this.wireLowerBound);
-            this.groupBox3.Location = new System.Drawing.Point(458, 743);
+            this.groupBox3.Location = new System.Drawing.Point(304, 742);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(140, 82);
             this.groupBox3.TabIndex = 11;
@@ -321,7 +306,7 @@ namespace Wireform.Sketch
             this.groupBox4.Controls.Add(this.label4);
             this.groupBox4.Controls.Add(this.documentUpperBound);
             this.groupBox4.Controls.Add(this.documentLowerBound);
-            this.groupBox4.Location = new System.Drawing.Point(166, 743);
+            this.groupBox4.Location = new System.Drawing.Point(12, 742);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(140, 82);
             this.groupBox4.TabIndex = 11;
@@ -475,23 +460,121 @@ namespace Wireform.Sketch
             this.label8.Text = "1";
             this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // groupBox6
+            // 
+            this.groupBox6.Controls.Add(this.cameraIdBox);
+            this.groupBox6.Location = new System.Drawing.Point(556, 2);
+            this.groupBox6.Name = "groupBox6";
+            this.groupBox6.Size = new System.Drawing.Size(88, 53);
+            this.groupBox6.TabIndex = 13;
+            this.groupBox6.TabStop = false;
+            this.groupBox6.Text = "Camera";
+            // 
+            // cameraIdBox
+            // 
+            this.cameraIdBox.FormattingEnabled = true;
+            this.cameraIdBox.Location = new System.Drawing.Point(8, 23);
+            this.cameraIdBox.Name = "cameraIdBox";
+            this.cameraIdBox.Size = new System.Drawing.Size(71, 28);
+            this.cameraIdBox.TabIndex = 0;
+            this.cameraIdBox.SelectedIndexChanged += new System.EventHandler(this.CameraIdBox_SelectedIndexChanged);
+            // 
+            // groupBox7
+            // 
+            this.groupBox7.Controls.Add(this.resolutionHeightBox);
+            this.groupBox7.Controls.Add(this.resolutionWidthBox);
+            this.groupBox7.Controls.Add(this.label12);
+            this.groupBox7.Location = new System.Drawing.Point(651, 2);
+            this.groupBox7.Name = "groupBox7";
+            this.groupBox7.Size = new System.Drawing.Size(207, 54);
+            this.groupBox7.TabIndex = 1;
+            this.groupBox7.TabStop = false;
+            this.groupBox7.Text = "Resolution";
+            // 
+            // resolutionHeightBox
+            // 
+            this.resolutionHeightBox.Increment = new decimal(new int[] {
+            50,
+            0,
+            0,
+            0});
+            this.resolutionHeightBox.Location = new System.Drawing.Point(117, 23);
+            this.resolutionHeightBox.Maximum = new decimal(new int[] {
+            5000,
+            0,
+            0,
+            0});
+            this.resolutionHeightBox.Minimum = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+            this.resolutionHeightBox.Name = "resolutionHeightBox";
+            this.resolutionHeightBox.Size = new System.Drawing.Size(83, 27);
+            this.resolutionHeightBox.TabIndex = 3;
+            this.resolutionHeightBox.Value = new decimal(new int[] {
+            720,
+            0,
+            0,
+            0});
+            this.resolutionHeightBox.ValueChanged += new System.EventHandler(this.ResolutionChanged);
+            // 
+            // resolutionWidthBox
+            // 
+            this.resolutionWidthBox.Increment = new decimal(new int[] {
+            50,
+            0,
+            0,
+            0});
+            this.resolutionWidthBox.Location = new System.Drawing.Point(6, 23);
+            this.resolutionWidthBox.Maximum = new decimal(new int[] {
+            5000,
+            0,
+            0,
+            0});
+            this.resolutionWidthBox.Minimum = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+            this.resolutionWidthBox.Name = "resolutionWidthBox";
+            this.resolutionWidthBox.Size = new System.Drawing.Size(83, 27);
+            this.resolutionWidthBox.TabIndex = 2;
+            this.resolutionWidthBox.Value = new decimal(new int[] {
+            1080,
+            0,
+            0,
+            0});
+            this.resolutionWidthBox.ValueChanged += new System.EventHandler(this.ResolutionChanged);
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(95, 28);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(16, 20);
+            this.label12.TabIndex = 1;
+            this.label12.Text = "x";
+            // 
             // SketchForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1782, 828);
+            this.Controls.Add(this.groupBox7);
             this.Controls.Add(this.DisplayGroupBox);
             this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
-            this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.DebuggerDisplay);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.wireformPanel);
             this.Controls.Add(this.imageBox1);
             this.Controls.Add(this.imageBox2);
             this.Controls.Add(this.CaptureButton);
+            this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.groupBox6);
             this.Location = new System.Drawing.Point(0, 150);
             this.Name = "SketchForm";
             this.Text = "Form1";
@@ -502,7 +585,6 @@ namespace Wireform.Sketch
             this.DisplayGroupBox.ResumeLayout(false);
             this.DisplayGroupBox.PerformLayout();
             this.DebuggerDisplay.ResumeLayout(false);
-            this.DebuggerDisplay.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.exposureBar)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
@@ -521,6 +603,11 @@ namespace Wireform.Sketch
             this.zeroPanel.PerformLayout();
             this.onePanel.ResumeLayout(false);
             this.onePanel.PerformLayout();
+            this.groupBox6.ResumeLayout(false);
+            this.groupBox7.ResumeLayout(false);
+            this.groupBox7.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.resolutionHeightBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.resolutionWidthBox)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -538,9 +625,6 @@ namespace Wireform.Sketch
         private System.Windows.Forms.Panel wireformPanel;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.GroupBox DebuggerDisplay;
-        private System.Windows.Forms.RadioButton radioButton1;
-        private System.Windows.Forms.RadioButton radioButton2;
-        private System.Windows.Forms.RadioButton radioButton3;
         private System.Windows.Forms.TrackBar exposureBar;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.GroupBox groupBox2;
@@ -567,6 +651,13 @@ namespace Wireform.Sketch
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.GroupBox groupBox6;
+        private System.Windows.Forms.ComboBox cameraIdBox;
+        private System.Windows.Forms.GroupBox groupBox7;
+        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.NumericUpDown resolutionWidthBox;
+        private System.Windows.Forms.NumericUpDown resolutionHeightBox;
+        private System.Windows.Forms.ComboBox debuggerDisplayBox;
     }
 }
 

@@ -23,14 +23,7 @@ namespace Wireform.Sketch
 {
     public class WireformSketch
     {
-        public readonly WireformSketchProperties Props;
-        public WireformSketch(WireformSketchProperties properties)
-        {
-            Props = properties;
-            _ = GateCollection.GatePaths; //to temporarily fix a bug in wireform 
-        }
-
-        static readonly Dictionary<GateTraits, string> gatePaths = new()
+        private static readonly Dictionary<GateTraits, string> gatePaths = new()
         {
             { GateTraits.Tunnel, "Tunnel" },
             { GateTraits.Bit, "BitSource" },
@@ -43,10 +36,19 @@ namespace Wireform.Sketch
             { GateTraits.XNor, "Logic/XNOR" },
         };
 
+        public readonly WireformSketchProperties Props;
         public readonly BoardStack boardStack = new BoardStack(new DebugSaver());
+        public readonly DebugSnapshot snapshot = new();
 
-        readonly List<(GateTraits gate, ContourData contourData)> gateRecord = new();
-        readonly List<(Point[] contour, Point[] approx)> wireRecord = new();
+        private readonly List<(GateTraits gate, ContourData contourData)> gateRecord = new();
+        private readonly List<(Point[] contour, Point[] approx)> wireRecord = new();
+        
+
+        public WireformSketch(WireformSketchProperties properties)
+        {
+            Props = properties;
+            _ = GateCollection.GatePaths; //to temporarily fix a bug in wireform 
+        }
 
         /// <summary>
         /// Each index here corresponds to an index in <see cref="wireRecord"/>
@@ -61,6 +63,9 @@ namespace Wireform.Sketch
         /// <param name="readCircuit">Whether or not gates/wires should be read on this frame.</param>
         public string ProcessFrame(Mat frame, bool readCircuit)
         {
+            snapshot.Clear(readCircuit);
+            snapshot.RegisterMat("Frame", frame);
+
             var docRet = FindDocument(frame);
 
             if (docRet.IsT0) return docRet.AsT0; //if error message, return error
@@ -96,6 +101,7 @@ namespace Wireform.Sketch
             //blur slightly for document detection
             using Mat f_blurredFrame = frame.Clone();
             CvInvoke.GaussianBlur(f_blurredFrame, f_blurredFrame, new Size(7, 7), 0);
+            snapshot.RegisterMat("Frame/Blurred", f_blurredFrame);
 
             //convert to HSV for easier color detection
             using Mat f_hsvFrame = new Mat();
@@ -105,10 +111,12 @@ namespace Wireform.Sketch
             //in the future: make this a dynamic threshold or canny edge or hough line transform?
             using Mat f_documentMask = new Mat();
             CvInvoke.InRange(f_hsvFrame, (ScalarArray)Props.DocumentHsvLowerBound, (ScalarArray)Props.DocumentHsvUpperBound, f_documentMask);
+            snapshot.RegisterMat("Frame/Document Mask", f_documentMask);
 
             using VectorOfVectorOfPoint f_contours = new VectorOfVectorOfPoint();
             using Mat f_hierarchy = new Mat();
             CvInvoke.FindContours(f_documentMask, f_contours, f_hierarchy, RetrType.External, ChainApproxMethod.ChainApproxSimple);
+            snapshot.RegisterContours("Frame/Document Contours", f_contours, frame);
 
             if (f_contours.Size == 0) return "No possible document contours found. Try changing the document range!";
 
@@ -126,6 +134,14 @@ namespace Wireform.Sketch
                 largestArea = area;
                 f_documentContour = f_contour;
             }
+
+            //TODO: analyze squareness
+
+            //a mask with only the document contour on the frame.
+            Mat f_documentOnlyMask = new Mat(frame.Size, DepthType.Cv8U, 1);
+            f_documentOnlyMask.SetTo(new MCvScalar());
+            CvInvoke.FillPoly(f_documentOnlyMask, f_documentContour, new MCvScalar(255, 255, 255));
+            snapshot.RegisterContours("Frame/Document Only Mask", f_contours, frame);
 
             //get bounds of the document for perspective transformation
             //TODO: make this adaptive
@@ -151,9 +167,10 @@ namespace Wireform.Sketch
             CvInvoke.WarpPerspective(frame, d_untrimmed, f_transformation, new Size(Props.DocWidth, Props.DocHeight));
             Rectangle trimBounds = new Rectangle(Props.DocMargin, Props.DocMargin, d_untrimmed.Width - 2 * Props.DocMargin, d_untrimmed.Height - 2 * Props.DocMargin);
             Mat document = new Mat(d_untrimmed, trimBounds);
+            snapshot.RegisterMat("Document/Untrimmed", d_untrimmed);
 
 
-            if(Props.DocumentOutlineColor is not null)
+            if (Props.DocumentOutlineColor is not null)
             {
                 var color = Props.DocumentOutlineColor.Value;
                 //CvInvoke.Line(frame, tL, tR, color, 3);
@@ -165,11 +182,7 @@ namespace Wireform.Sketch
             }
 
 
-            //a mask with only the document contour on the frame.
-            Mat f_documentOnlyMask = new Mat(frame.Size, DepthType.Cv8U, 1);
-            f_documentOnlyMask.SetTo(new MCvScalar());
-            CvInvoke.FillPoly(f_documentOnlyMask, f_documentContour, new MCvScalar(255, 255, 255));
-
+            
             return new DocumentData(document, d_untrimmed, f_documentOnlyMask, f_transformation);
         }
 
@@ -180,23 +193,25 @@ namespace Wireform.Sketch
         {
             using Mat d_blurred = doc.Document.Clone();
             CvInvoke.GaussianBlur(d_blurred, d_blurred, new Size(7, 7), 0);
+            snapshot.RegisterMat("Document/Blurred", d_blurred);
+
             //find the gates using an inrange in hsv
             using Mat d_hsv = new Mat();
             CvInvoke.CvtColor(d_blurred, d_hsv, ColorConversion.Bgr2Hsv);
             using Mat d_GateMask = new Mat();
             CvInvoke.InRange(d_hsv, (ScalarArray) Props.GateHsvLowerBound, (ScalarArray) Props.GateHsvUpperBound, d_GateMask);
+            snapshot.RegisterMat("Document/Gate Mask", d_GateMask);
 
             //dilate to increase clarity of shapes detected and minimize chance of disconnect
             using Mat element = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), new Point(-1, -1));
             CvInvoke.Dilate(d_GateMask, d_GateMask, element, new Point(-1, -1), Props.GateDilationCount, BorderType.Constant, new MCvScalar(0, 0, 0));
-
-            SketchForm.Imagebox.SetImageBox(d_GateMask);
+            snapshot.RegisterMat("Document/Gate Mask Dilated", d_GateMask);
 
             //full set of gate contours (including inner contours)
             using VectorOfVectorOfPoint d_gateContours = new VectorOfVectorOfPoint();
             using HierarchyMatrix d_hierarchy = new HierarchyMatrix();
             CvInvoke.FindContours(d_GateMask, d_gateContours, d_hierarchy.Matrix, RetrType.Ccomp, ChainApproxMethod.ChainApproxNone);
-
+            snapshot.RegisterContours("Document/Gate Contours", d_gateContours, doc.Document);
 
             if (d_gateContours.Size == 0) return "No Gate contours found";
 
@@ -224,6 +239,8 @@ namespace Wireform.Sketch
                     continue;
                 }
 
+                snapshot.RegisterContourData("Gates/Contours", contourData, doc.Document);
+
                 gateRecord.Add((GetTraits(contourData), contourData));
             }
 
@@ -244,11 +261,12 @@ namespace Wireform.Sketch
                     (GateTraits minGate, ContourData minCont) = gateRecord[minDistIndex];
                     Rectangle unionedRect = minCont.BoundingRect.Union(modifier.BoundingRect);
                     gateRecord[minDistIndex] = (minGate | GateTraits.Bar, new ContourData(minCont.Contour, minCont.ApproxC, unionedRect, minCont.Children, minCont.Centroid, minCont.ArcLength, minCont.LeftEdge));
-
-                } 
+                    snapshot.RegisterContourData("Gates/Modified", gateRecord[minDistIndex].contourData, doc.Document);
+                }
                 else if (isBitPin)
                 {
                     gateRecord.Add((GateTraits.Bit, modifier));
+                    snapshot.RegisterContourData("Gates/Modified", gateRecord[^1].contourData, doc.Document);
                 }
                 else if (isTunnel)
                 {
@@ -265,7 +283,7 @@ namespace Wireform.Sketch
                     //add a tunnel gate with the two unioned
                     Rectangle unionedRect = targetModifier.BoundingRect.Union(modifier.BoundingRect);
                     gateRecord.Add((GateTraits.Tunnel, new ContourData(targetModifier.Contour, targetModifier.ApproxC, unionedRect, targetModifier.Children, targetModifier.Centroid, targetModifier.ArcLength, targetModifier.LeftEdge)));
-
+                    snapshot.RegisterContourData("Gates/Modified", gateRecord[^1].contourData, doc.Document);
                 }
             }
 
@@ -323,10 +341,12 @@ namespace Wireform.Sketch
 
             using Mat d_wireMask = new Mat();
             CvInvoke.InRange(d_hsv, (ScalarArray)Props.WireHsvLowerBound, (ScalarArray)Props.WireHsvUpperBound, d_wireMask);
+            snapshot.RegisterMat("Document/Wire Mask", d_wireMask);
 
             using VectorOfVectorOfPoint d_wireContours = new VectorOfVectorOfPoint();
             using Mat d_wireHierarchy = new Mat();
             CvInvoke.FindContours(d_wireMask, d_wireContours, d_wireHierarchy, RetrType.External, ChainApproxMethod.ChainApproxSimple);
+            snapshot.RegisterContours("Document/Wire Contours", d_wireContours, doc.Document);
 
             wireRecord.Clear();
             wirePairs.Clear();

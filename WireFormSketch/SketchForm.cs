@@ -26,7 +26,7 @@ namespace Wireform.Sketch
 {
     public partial class SketchForm : Form
     {
-        VideoCapture capture;
+        VideoCapture capture = null;
         public SketchForm()
         {
             InitializeComponent();
@@ -43,13 +43,14 @@ namespace Wireform.Sketch
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            capture = new VideoCapture(1);
-            ExposureBar_Scroll(this, null);
+            CheckCameras();
+            CreateCapture();
+
+            //debuggerDisplayBox.DisplayMember = "Key";
+            //debuggerDisplayBox.ValueMember = "Key";
 
             //set properties
             Imagebox = imageBox2;
-            capture.Set(CapProp.FrameWidth, 1280);
-            capture.Set(CapProp.FrameHeight, 720);
 
             documentLowerBound.BackColor = sketcher.Props.DocumentHsvLowerBound.ColorFromHSV();
             documentUpperBound.BackColor = sketcher.Props.DocumentHsvUpperBound.ColorFromHSV();
@@ -60,13 +61,36 @@ namespace Wireform.Sketch
             gateLowerBound.BackColor = sketcher.Props.GateHsvLowerBound.ColorFromHSV();
             gateUpperBound.BackColor = sketcher.Props.GateHsvUpperBound.ColorFromHSV();
 
-            onePanel.BackColor = sketcher.Props.BitColors.One.ToColor();
-            zeroPanel.BackColor = sketcher.Props.BitColors.Zero.ToColor();
+            onePanel.BackColor     = sketcher.Props.BitColors.One    .ToColor();
+            zeroPanel.BackColor    = sketcher.Props.BitColors.Zero   .ToColor();
             nothingPanel.BackColor = sketcher.Props.BitColors.Nothing.ToColor();
-            errorPanel.BackColor = sketcher.Props.BitColors.Error.ToColor();
+            errorPanel.BackColor   = sketcher.Props.BitColors.Error  .ToColor();
            
             //attach event
             Application.Idle += LoadFrame;
+        }
+
+        /// <summary>
+        /// Finds all valid cameras
+        /// </summary>
+        private void CheckCameras()
+        {
+            bool valid = true;
+            for(int i = 0; valid; i++)
+            {
+                using VideoCapture testCap = new VideoCapture(i);
+                if (testCap.IsOpened) cameraIdBox.Items.Add(i);
+                else valid = false;
+            }
+            cameraIdBox.SelectedIndex = 0;
+        }
+
+        private void CreateCapture()
+        {
+            capture?.Dispose();
+            capture = new VideoCapture(int.Parse(cameraIdBox.SelectedItem.ToString()));
+            ExposureBar_Scroll(this, null);
+            ResolutionChanged(this, null);
         }
 
         #region Wireform
@@ -86,6 +110,7 @@ namespace Wireform.Sketch
             if (captureWireform)
             {
                 DrawPanel();
+                debuggerDisplayBox.DataSource = sketcher.snapshot.Keys.ToArray();
                 captureWireform = false;
             }
 
@@ -120,8 +145,7 @@ namespace Wireform.Sketch
         const float scaleDiv = 20;
         private void DrawPanel()
         {
-            Bitmap buffer;
-            buffer = new Bitmap(this.Width, this.Height);
+            Bitmap buffer = new Bitmap(wireformPanel.Width, wireformPanel.Height);
             //start an async task
             _ = Task.Factory.StartNew(async () =>
             {
@@ -161,9 +185,8 @@ namespace Wireform.Sketch
         #endregion
 
         #region WinformsInput
-        /// <summary>
-        /// Capture gates next frame
-        /// </summary>
+        private void CameraIdBox_SelectedIndexChanged(object sender, EventArgs e) => CreateCapture();
+
         private void CaptureButton_Click(object sender, EventArgs e) => captureWireform = true;
 
         private void Display_CheckedChanged(object sender, EventArgs e)
@@ -207,7 +230,16 @@ namespace Wireform.Sketch
             => sketcher.Props.BitColors = sketcher.Props.BitColors with { Nothing = GetColorProperty(sketcher.Props.BitColors.Nothing, nothingPanel) };
         private void ErrorPanel_Click(object sender, EventArgs e)
             => sketcher.Props.BitColors = sketcher.Props.BitColors with { Error = GetColorProperty(sketcher.Props.BitColors.Error, errorPanel) };
+        private void ResolutionChanged(object sender, EventArgs e)
+        {
+            capture.Set(CapProp.FrameWidth, (int)resolutionWidthBox.Value);
+            capture.Set(CapProp.FrameHeight, (int)resolutionHeightBox.Value);
+        }
 
+        private void DebuggerDisplayBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            imageBox2.Image = sketcher.snapshot[debuggerDisplayBox.SelectedItem.ToString()][0];
+        }
 
         #endregion Winforms
 
