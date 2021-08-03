@@ -10,25 +10,20 @@ namespace Wireform.Sketch.Utils
         /// <summary>
         /// The backing Mat that stores the actual hierarchy data
         /// </summary>
-        public readonly Mat Matrix;
+        public readonly Mat Matrix = new Mat();
 
-        public HierarchyMatrix()
-        {
-            Matrix = new Mat();
-        }
+        /// <param name="component">next, previous, child, parent</param>
+        /// <param name="contour">contour to read from</param>
+        public int this[int contour, int component] 
+            => Get(contour, component);
+
+        /// <param name="contour">contour to read from</param>
+        public HierarchyItem this[int contour]
+            => new HierarchyItem(Get(contour, 0), Get(contour, 1), Get(contour, 2), Get(contour, 3));
 
         /// <param name="component">next, previous, child, parent</param>
         /// <param name="contourIndex">contour to read from</param>
-        public int this[int contourIndex, int component] => Get(component, contourIndex);
-
-
-        /// <param name="contourIndex">contour to read from</param>
-        public (int next, int previous, int firstChild, int parent) this[int contourIndex] => (this[contourIndex, 0], this[contourIndex, 1], this[contourIndex, 2], this[contourIndex, 3]);
-
-
-        /// <param name="component">next, previous, child, parent</param>
-        /// <param name="contourIndex">contour to read from</param>
-        int Get(int component, int contourIndex)
+        int Get(int contourIndex, int component)
         {
             //element stride is the amount of ints wide each element is
             long elementStride = Matrix.ElementSize / sizeof(Int32);
@@ -48,10 +43,58 @@ namespace Wireform.Sketch.Utils
             return -1;
         }
 
-        public OutputArray GetOutputArray() => ((IOutputArray)Matrix).GetOutputArray();
-
-        public InputArray GetInputArray() => ((IInputArray)Matrix).GetInputArray();
+        InputArray IInputArray.GetInputArray() => ((IInputArray)Matrix).GetInputArray();
+        OutputArray IOutputArray.GetOutputArray() => ((IOutputArray)Matrix).GetOutputArray();
 
         public void Dispose() => Matrix.Dispose();
+    }
+
+    public readonly struct HierarchyItem
+    {
+        /// <summary>
+        /// The index of the next contour at this hierarchy level. 
+        /// -1 if unavailable.
+        /// </summary>
+        public readonly int Next;
+        /// <summary>
+        /// The index of the previous contour at this hierarchy level. 
+        /// -1 if unavailable.
+        /// </summary>
+        public readonly int Previous;
+        /// <summary>
+        /// The index of the first child contour at this hierarchy level. 
+        /// -1 if unavailable.
+        /// </summary>
+        public readonly int FirstChild;
+        /// <summary>
+        /// The index of the parent contour at this hierarchy level. 
+        /// -1 if unavailable.
+        /// </summary>
+        public readonly int Parent;
+
+        /// <summary>
+        /// If it is the last item in it's chain
+        /// </summary>
+        public bool IsLastItem => Next == -1;
+        /// <summary>
+        /// If it is the first item in it's chain
+        /// </summary>
+        public bool IsFirstItem => Previous == -1;
+        /// <summary>
+        /// If it has no children
+        /// </summary>
+        public bool IsLeaf => FirstChild == -1;
+        /// <summary>
+        /// If it is a root contour (no parent)
+        /// </summary>
+        public bool IsRoot => Parent == -1;
+
+        public HierarchyItem(int next, int previous, int firstChild, int parent)
+        {
+            Next = next;
+            Previous = previous;
+            FirstChild = firstChild;
+            Parent = parent;
+        }
     }
 }

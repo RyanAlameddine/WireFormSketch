@@ -73,7 +73,7 @@ namespace Wireform.Sketch
         private void CheckCameras()
         {
             bool valid = true;
-            for(int i = 0; valid; i++)
+            for (int i = 0; valid; i++)
             {
                 using VideoCapture testCap = new VideoCapture(i);
                 if (testCap.IsOpened) cameraIdBox.Items.Add(i);
@@ -85,6 +85,7 @@ namespace Wireform.Sketch
         private void CreateCapture()
         {
             capture?.Dispose();
+            //capture = new VideoCapture(1);
             capture = new VideoCapture(int.Parse(cameraIdBox.SelectedItem.ToString()));
             ExposureBar_Scroll(this, null);
             ResolutionChanged(this, null);
