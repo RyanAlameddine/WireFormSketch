@@ -32,7 +32,6 @@ namespace Wireform.Sketch
             InitializeComponent();
         }
 
-        public static ImageBox Imagebox { get; private set; }
 
         readonly WireformSketch sketcher = new WireformSketch(new WireformSketchProperties()
         {
@@ -50,8 +49,6 @@ namespace Wireform.Sketch
             //debuggerDisplayBox.ValueMember = "Key";
 
             //set properties
-            Imagebox = imageBox2;
-
             documentLowerBound.BackColor = sketcher.Props.DocumentHsvLowerBound.ColorFromHSV();
             documentUpperBound.BackColor = sketcher.Props.DocumentHsvUpperBound.ColorFromHSV();
 
@@ -61,10 +58,10 @@ namespace Wireform.Sketch
             gateLowerBound.BackColor = sketcher.Props.GateHsvLowerBound.ColorFromHSV();
             gateUpperBound.BackColor = sketcher.Props.GateHsvUpperBound.ColorFromHSV();
 
-            onePanel.BackColor     = sketcher.Props.BitColors.One    .ToColor();
-            zeroPanel.BackColor    = sketcher.Props.BitColors.Zero   .ToColor();
+            onePanel    .BackColor = sketcher.Props.BitColors.One    .ToColor();
+            zeroPanel   .BackColor = sketcher.Props.BitColors.Zero   .ToColor();
             nothingPanel.BackColor = sketcher.Props.BitColors.Nothing.ToColor();
-            errorPanel.BackColor   = sketcher.Props.BitColors.Error  .ToColor();
+            errorPanel  .BackColor = sketcher.Props.BitColors.Error  .ToColor();
            
             //attach event
             Application.Idle += LoadFrame;
@@ -110,8 +107,12 @@ namespace Wireform.Sketch
             if (captureWireform)
             {
                 DrawPanel();
-                debuggerDisplayBox.DataSource = sketcher.snapshot.Keys.ToArray();
+
                 captureWireform = false;
+
+                var selectedKey = debuggerDisplayBox.SelectedItem;
+                debuggerDisplayBox.DataSource = sketcher.snapshot.Keys.ToArray();
+                if (selectedKey is not null && sketcher.snapshot.ContainsKey(selectedKey.ToString())) debuggerDisplayBox.SelectedItem = selectedKey;
             }
 
             imageBox1.SetImageBox(frame);
@@ -238,7 +239,19 @@ namespace Wireform.Sketch
 
         private void DebuggerDisplayBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            imageBox2.Image = sketcher.snapshot[debuggerDisplayBox.SelectedItem.ToString()][0];
+            debuggerNumberPicker.Value = 0;
+            debuggerNumberPicker.Maximum = sketcher.snapshot[debuggerDisplayBox.SelectedItem.ToString()].Count - 1;
+            LoadDebugImage();
+        }
+
+        private void DebuggerNumberPicker_ValueChanged(object sender, EventArgs e)
+        {
+            LoadDebugImage();
+        }
+
+        private void LoadDebugImage()
+        {
+            imageBox2.Image = sketcher.snapshot[debuggerDisplayBox.SelectedItem.ToString()][(int)debuggerNumberPicker.Value];
         }
 
         #endregion Winforms

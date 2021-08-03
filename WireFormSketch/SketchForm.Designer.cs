@@ -73,6 +73,7 @@ namespace Wireform.Sketch
             this.resolutionHeightBox = new System.Windows.Forms.NumericUpDown();
             this.resolutionWidthBox = new System.Windows.Forms.NumericUpDown();
             this.label12 = new System.Windows.Forms.Label();
+            this.debuggerNumberPicker = new System.Windows.Forms.NumericUpDown();
             ((System.ComponentModel.ISupportInitialize)(this.imageBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.imageBox2)).BeginInit();
             this.DisplayGroupBox.SuspendLayout();
@@ -91,6 +92,7 @@ namespace Wireform.Sketch
             this.groupBox7.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.resolutionHeightBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.resolutionWidthBox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.debuggerNumberPicker)).BeginInit();
             this.SuspendLayout();
             // 
             // imageBox1
@@ -187,6 +189,7 @@ namespace Wireform.Sketch
             // 
             // DebuggerDisplay
             // 
+            this.DebuggerDisplay.Controls.Add(this.debuggerNumberPicker);
             this.DebuggerDisplay.Controls.Add(this.debuggerDisplayBox);
             this.DebuggerDisplay.Location = new System.Drawing.Point(1067, 472);
             this.DebuggerDisplay.Name = "DebuggerDisplay";
@@ -201,7 +204,7 @@ namespace Wireform.Sketch
             this.debuggerDisplayBox.FormattingEnabled = true;
             this.debuggerDisplayBox.Location = new System.Drawing.Point(6, 19);
             this.debuggerDisplayBox.Name = "debuggerDisplayBox";
-            this.debuggerDisplayBox.Size = new System.Drawing.Size(691, 28);
+            this.debuggerDisplayBox.Size = new System.Drawing.Size(556, 28);
             this.debuggerDisplayBox.TabIndex = 3;
             this.debuggerDisplayBox.SelectedIndexChanged += new System.EventHandler(this.DebuggerDisplayBox_SelectedIndexChanged);
             // 
@@ -556,6 +559,14 @@ namespace Wireform.Sketch
             this.label12.TabIndex = 1;
             this.label12.Text = "x";
             // 
+            // debuggerNumberPicker
+            // 
+            this.debuggerNumberPicker.Location = new System.Drawing.Point(568, 19);
+            this.debuggerNumberPicker.Name = "debuggerNumberPicker";
+            this.debuggerNumberPicker.Size = new System.Drawing.Size(121, 27);
+            this.debuggerNumberPicker.TabIndex = 4;
+            this.debuggerNumberPicker.ValueChanged += new System.EventHandler(this.DebuggerNumberPicker_ValueChanged);
+            // 
             // SketchForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
@@ -608,6 +619,7 @@ namespace Wireform.Sketch
             this.groupBox7.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.resolutionHeightBox)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.resolutionWidthBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.debuggerNumberPicker)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -658,6 +670,7 @@ namespace Wireform.Sketch
         private System.Windows.Forms.NumericUpDown resolutionWidthBox;
         private System.Windows.Forms.NumericUpDown resolutionHeightBox;
         private System.Windows.Forms.ComboBox debuggerDisplayBox;
+        private System.Windows.Forms.NumericUpDown debuggerNumberPicker;
     }
 }
 

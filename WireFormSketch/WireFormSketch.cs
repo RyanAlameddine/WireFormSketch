@@ -141,7 +141,7 @@ namespace Wireform.Sketch
             Mat f_documentOnlyMask = new Mat(frame.Size, DepthType.Cv8U, 1);
             f_documentOnlyMask.SetTo(new MCvScalar());
             CvInvoke.FillPoly(f_documentOnlyMask, f_documentContour, new MCvScalar(255, 255, 255));
-            snapshot.RegisterContours("Frame/Document Only Mask", f_contours, frame);
+            snapshot.RegisterMat("Frame/Document Only Mask", f_documentOnlyMask);
 
             //get bounds of the document for perspective transformation
             //TODO: make this adaptive
@@ -210,7 +210,7 @@ namespace Wireform.Sketch
             //full set of gate contours (including inner contours)
             using VectorOfVectorOfPoint d_gateContours = new VectorOfVectorOfPoint();
             using HierarchyMatrix d_hierarchy = new HierarchyMatrix();
-            CvInvoke.FindContours(d_GateMask, d_gateContours, d_hierarchy.Matrix, RetrType.Ccomp, ChainApproxMethod.ChainApproxNone);
+            CvInvoke.FindContours(d_GateMask, d_gateContours, d_hierarchy, RetrType.Ccomp, ChainApproxMethod.ChainApproxNone);
             snapshot.RegisterContours("Document/Gate Contours", d_gateContours, doc.Document);
 
             if (d_gateContours.Size == 0) return "No Gate contours found";
