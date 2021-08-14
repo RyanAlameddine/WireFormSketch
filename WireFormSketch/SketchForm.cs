@@ -205,33 +205,33 @@ namespace Wireform.Sketch
         /// <summary>
         /// Loads a color from the dialog and returns a new one
         /// </summary>
-        private MCvScalar GetColorProperty(MCvScalar currentColor, Panel panel)
+        private MCvScalar GetColorProperty(MCvScalar currentColor, Panel panel, bool hsv)
         {
             ColorPicker colorPicker = new ColorPicker(this);
             colorPicker.DisplayAsDialog(currentColor);
-            panel.BackColor = dialogColor.ColorFromHSV();
+            panel.BackColor = hsv ? dialogColor.ColorFromHSV() : dialogColor.ToColor();
             return dialogColor;
         }
         private void DocumentLowerBound_Click(object sender, EventArgs e)
-            => sketcher.Props.DocumentHsvLowerBound = GetColorProperty(sketcher.Props.DocumentHsvLowerBound, documentLowerBound);
+            => sketcher.Props.DocumentHsvLowerBound = GetColorProperty(sketcher.Props.DocumentHsvLowerBound, documentLowerBound, true);
         private void DocumentUpperBound_Click(object sender, EventArgs e)
-            => sketcher.Props.DocumentHsvUpperBound = GetColorProperty(sketcher.Props.DocumentHsvUpperBound, documentUpperBound);
+            => sketcher.Props.DocumentHsvUpperBound = GetColorProperty(sketcher.Props.DocumentHsvUpperBound, documentUpperBound, true);
         private void GateLowerBound_Click(object sender, EventArgs e)
-            => sketcher.Props.GateHsvLowerBound = GetColorProperty(sketcher.Props.GateHsvLowerBound, gateLowerBound);
+            => sketcher.Props.GateHsvLowerBound = GetColorProperty(sketcher.Props.GateHsvLowerBound, gateLowerBound, true);
         private void GateUpperBound_Click(object sender, EventArgs e)
-            => sketcher.Props.GateHsvUpperBound = GetColorProperty(sketcher.Props.GateHsvUpperBound, gateUpperBound);
+            => sketcher.Props.GateHsvUpperBound = GetColorProperty(sketcher.Props.GateHsvUpperBound, gateUpperBound, true);
         private void WireLowerBound_Click(object sender, EventArgs e)
-            => sketcher.Props.WireHsvLowerBound = GetColorProperty(sketcher.Props.WireHsvLowerBound, wireLowerBound);
+            => sketcher.Props.WireHsvLowerBound = GetColorProperty(sketcher.Props.WireHsvLowerBound, wireLowerBound, true);
         private void WireUpperBound_Click(object sender, EventArgs e)
-            => sketcher.Props.WireHsvUpperBound = GetColorProperty(sketcher.Props.WireHsvUpperBound, wireUpperBound);
+            => sketcher.Props.WireHsvUpperBound = GetColorProperty(sketcher.Props.WireHsvUpperBound, wireUpperBound, true);
         private void OnePanel_Click(object sender, EventArgs e)
-            => sketcher.Props.BitColors = sketcher.Props.BitColors with { One = GetColorProperty(sketcher.Props.BitColors.One, onePanel) };
+            => sketcher.Props.BitColors = sketcher.Props.BitColors with { One = GetColorProperty(sketcher.Props.BitColors.One, onePanel, false) };
         private void ZeroPanel_Click(object sender, EventArgs e)
-            => sketcher.Props.BitColors = sketcher.Props.BitColors with { Zero = GetColorProperty(sketcher.Props.BitColors.Zero, zeroPanel) };
+            => sketcher.Props.BitColors = sketcher.Props.BitColors with { Zero = GetColorProperty(sketcher.Props.BitColors.Zero, zeroPanel, false) };
         private void NothingPanel_Click(object sender, EventArgs e)
-            => sketcher.Props.BitColors = sketcher.Props.BitColors with { Nothing = GetColorProperty(sketcher.Props.BitColors.Nothing, nothingPanel) };
+            => sketcher.Props.BitColors = sketcher.Props.BitColors with { Nothing = GetColorProperty(sketcher.Props.BitColors.Nothing, nothingPanel, false) };
         private void ErrorPanel_Click(object sender, EventArgs e)
-            => sketcher.Props.BitColors = sketcher.Props.BitColors with { Error = GetColorProperty(sketcher.Props.BitColors.Error, errorPanel) };
+            => sketcher.Props.BitColors = sketcher.Props.BitColors with { Error = GetColorProperty(sketcher.Props.BitColors.Error, errorPanel, false) };
         private void ResolutionChanged(object sender, EventArgs e)
         {
             capture.Set(CapProp.FrameWidth, (int)resolutionWidthBox.Value);
@@ -257,9 +257,62 @@ namespace Wireform.Sketch
 
         #endregion Winforms
 
+        private void SaveButton_Click(object sender, EventArgs e)
+        {
+            using var fbd = new FolderBrowserDialog();
+            DialogResult result = fbd.ShowDialog();
+
+            if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+            {
+                foreach (var key in sketcher.snapshot.Keys)
+                {
+                    var mats = sketcher.snapshot[key];
+                    string nameEdited = key.Replace('/', '.');
+                    for (int i = 0; i < mats.Count; i++)
+                    {
+                        string name = $"{fbd.SelectedPath}\\{nameEdited}{i}.png";
+                        CvInvoke.Imwrite(name, mats[i]);
+                    }
+                }
+            }
+
+            using (Mat frame = capture.QueryFrame())
+            {
+                sketcher.Props.DebugDrawCv = false;
+                sketcher.Props.DebugDrawWireform = false;
+                sketcher.Props.DrawOutput = true;
+                sketcher.ProcessFrame(frame, false);
+                string name = $"{fbd.SelectedPath}\\out.png";
+                CvInvoke.Imwrite(name, frame);
+            };
+
+            using (Mat frame = capture.QueryFrame())
+            {
+                sketcher.Props.DebugDrawCv = false;
+                sketcher.Props.DebugDrawWireform = true;
+                sketcher.Props.DrawOutput = false;
+                sketcher.ProcessFrame(frame, false);
+                string name = $"{fbd.SelectedPath}\\outWireform.png";
+                CvInvoke.Imwrite(name, frame);
+            };
+
+            using (Mat frame = capture.QueryFrame())
+            {
+                sketcher.Props.DebugDrawCv = true;
+                sketcher.Props.DebugDrawWireform = false;
+                sketcher.Props.DrawOutput = false;
+                sketcher.ProcessFrame(frame, false);
+                string name = $"{fbd.SelectedPath}\\outCv.png";
+                CvInvoke.Imwrite(name, frame);
+            };
+
+            Display_CheckedChanged(this, null);
+        }
+
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
             capture.Dispose();
+            sketcher.Dispose();
         }
     }
 }

@@ -21,7 +21,7 @@ using Wireform.Sketch.Utils;
 
 namespace Wireform.Sketch
 {
-    public class WireformSketch
+    public class WireformSketch : IDisposable
     {
         private static readonly Dictionary<GateTraits, string> gatePaths = new()
         {
@@ -181,6 +181,11 @@ namespace Wireform.Sketch
                 CvInvoke.PutText(frame, $"Document has {f_documentContour.Size} verticies!", new Point(10, 10), FontFace.HersheyPlain, 1, color);
             }
 
+            if(f_documentContour.Size is not 4)
+            {
+                return "Found invalid number of document contours";
+            }
+
 
             
             return new DocumentData(document, d_untrimmed, f_documentOnlyMask, f_transformation);
@@ -300,14 +305,15 @@ namespace Wireform.Sketch
             //|  | x o |    (x is the linker point, o is the centroid of the contour
             //|  |- - -/
 
-            //Point linkerPoint = new Point((int)modifier.Centroid.X + (vertical ? modifier.BoundingRect.Height : 0), (int)modifier.Centroid.Y + (!vertical ? modifier.BoundingRect.Width : 0));
+            Point linkerPoint = new Point((int)modifier.Centroid.X + (vertical ? modifier.BoundingRect.Height : 0), (int)modifier.Centroid.Y + (!vertical ? modifier.BoundingRect.Width : 0));
 
             //the maximum allowed distance from the linker point
             double maxDistSqr = vertical ? Math.Pow(modifier.BoundingRect.Height, 2) : Math.Pow(modifier.BoundingRect.Width, 2);
             
 
             //find the centroid of the gate that is closest to our linker point
-            int minDistIndex = targetPoints.ClosestInRange(modifier.Centroid.ToPoint(), maxDistSqr*1.5);
+            int minDistIndex = targetPoints.ClosestInRange(linkerPoint, maxDistSqr*1.5);
+            //int minDistIndex = targetPoints.ClosestInRange(modifier.Centroid.ToPoint(), maxDistSqr*1.5);
 
             return minDistIndex;
         }
@@ -569,6 +575,12 @@ namespace Wireform.Sketch
             CvInvoke.WarpPerspective(doc.D_Untrimmed, documentUnWarped, doc.F_Transformation, frame.Size, warpType: Warp.InverseMap);
 
             documentUnWarped.CopyTo(frame, doc.F_DocumentMask);
+        }
+
+        public void Dispose()
+        {
+            snapshot.Dispose();
+
         }
     }
 }
