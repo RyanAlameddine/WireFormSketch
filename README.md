@@ -1,8 +1,6 @@
 # WireformSketch
 
-<p align="center">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/Demos/fullAdder.gif" width="80%">
-</p>
+![fullAdder](https://github.com/RyanAlameddine/WireFormSketch/raw/media/Demos/fullAdder.gif)
 
 **WireformSketch** is an application that provides functionality for simulating hand drawn digital-logic circuit diagrams! 
 The feature detection is implemented purely in OpenCv (no machine learning or neural networks). 
@@ -36,18 +34,14 @@ The input pins (dots) can be toggled by clicking the inputs on this window.
 
 ### Simple drawing demo:
 
-<p align="center">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/Demos/fullDraw.gif" width="80%">
-</p>
+![fullDraw](https://github.com/RyanAlameddine/WireFormSketch/raw/media/Demos/fullDraw.gif)
 
 Notice how WireformSketch does not require perfect drawings. 
 This algorithm was designed with the intention of working on hand-drawn diagrams (although printed diagrams work too!)
 
 ### All-Features Demo:
 
-<p align="center">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/Demos/allFeatures.gif" width="80%">
-</p>
+![allFeatures](https://github.com/RyanAlameddine/WireFormSketch/raw/media/Demos/allFeatures.gif)
 
 Because WireformSketch is backed by Wireform, it supports all the interesting circuit features Wireform does like cycle-detection, logic gate propogation, state retention!
 Also note that due to the capture-based algorithm, WireformSketch is able to retain circuit state and drawing even when the camera is shaking so much that the gates/wires are
