@@ -1,6 +1,6 @@
 # WireformSketch
 
-![fullAdder](https://github.com/RyanAlameddine/WireFormSketch/raw/media/Demos/fullAdder.gif)
+![fullAdder](https://github.com/RyanAlameddine/WireFormSketch/raw/resources/Demos/fullAdder.gif)
 
 **WireformSketch** is an application that provides functionality for simulating hand drawn digital-logic circuit diagrams! 
 The feature detection is implemented purely in OpenCv (no machine learning or neural networks). 
@@ -34,14 +34,14 @@ The input pins (dots) can be toggled by clicking the inputs on this window.
 
 ### Simple drawing demo:
 
-![fullDraw](https://github.com/RyanAlameddine/WireFormSketch/raw/media/Demos/fullDraw.gif)
+![fullDraw](https://github.com/RyanAlameddine/WireFormSketch/raw/resources/Demos/fullDraw.gif)
 
 Notice how WireformSketch does not require perfect drawings. 
 This algorithm was designed with the intention of working on hand-drawn diagrams (although printed diagrams work too!)
 
 ### All-Features Demo:
 
-![allFeatures](https://github.com/RyanAlameddine/WireFormSketch/raw/media/Demos/allFeatures.gif)
+![allFeatures](https://github.com/RyanAlameddine/WireFormSketch/raw/resources/Demos/allFeatures.gif)
 
 Because WireformSketch is backed by Wireform, it supports all the interesting circuit features Wireform does like cycle-detection, logic gate propogation, state retention!
 Also note that due to the capture-based algorithm, WireformSketch is able to retain circuit state and drawing even when the camera is shaking so much that the gates/wires are
@@ -55,7 +55,7 @@ If you would like to look into my algorithm more deeply, feel free to check out 
 For this explanation, we will be working with a single frame from this source image:
 
 <p align="center">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Frame0.png" width="50%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Frame0.png" width="50%">
 </p>
 
 ## 1) Document Detection
@@ -65,22 +65,22 @@ Because it was not the focus of this application, my document detection algorith
 
 #### 1) Blur input to minimize the effects of noise on the outputted image
 <p align="center">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Frame.Blurred0.png" width="50%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Frame.Blurred0.png" width="50%">
 </p>
 
 #### 2) Convert to HSV and InRange on the document's expected color
 <p align="center">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Frame.Document Mask0.png" width="50%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Frame.Document Mask0.png" width="50%">
 </p>
 
 #### 3) Find & Analyze each contour detected and match the one most likely to be the document
 <p align="center">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Frame.Document Only Mask0.png" width="50%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Frame.Document Only Mask0.png" width="50%">
 </p>
 
 #### 4) Find the corners of the document and project them to a 8.5/11 image
 <p align="center">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Document.Untrimmed0.png" width="40%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Document.Untrimmed0.png" width="40%">
 </p>
 
 #### 5) Create an ROI that trims the outermost 10 pixels along the margin to account for frayed edges.
@@ -90,39 +90,39 @@ Because it was not the focus of this application, my document detection algorith
 
 #### 1) Blur document to minimize the effects of noise on the outputted image
 <p align="center">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Document.Blurred0.png" width="50%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Document.Blurred0.png" width="50%">
 </p>
 
 #### 2) Convert to HSV and InRange on the gate's expected color
 <p align="center">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Document.Gate Mask0.png" width="50%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Document.Gate Mask0.png" width="50%">
 </p>
 
 #### 3) Dilate the image to combine any skipped edges
 <p align="center">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Document.Gate Mask Dilated0.png" width="50%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Document.Gate Mask Dilated0.png" width="50%">
 </p>
 
 #### 4) Find Contours from mask
 <p align="center">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Document.Gate Contours0.png" width="50%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Document.Gate Contours0.png" width="50%">
 </p>
 
 #### 5) Isolate each contour and perform trait analysis
 <p align="center">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Gates.Contours0.png" width="13%">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Gates.Contours1.png" width="13%">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Gates.Contours2.png" width="13%">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Gates.Contours3.png" width="13%">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Gates.Contours4.png" width="13%">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Gates.Contours5.png" width="13%">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Gates.Contours6.png" width="13%">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Gates.Contours7.png" width="13%">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Gates.Contours8.png" width="13%">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Gates.Contours9.png" width="13%">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Gates.Contours10.png" width="13%">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Gates.Contours11.png" width="13%">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Gates.Contours12.png" width="13%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Gates.Contours0.png" width="13%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Gates.Contours1.png" width="13%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Gates.Contours2.png" width="13%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Gates.Contours3.png" width="13%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Gates.Contours4.png" width="13%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Gates.Contours5.png" width="13%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Gates.Contours6.png" width="13%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Gates.Contours7.png" width="13%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Gates.Contours8.png" width="13%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Gates.Contours9.png" width="13%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Gates.Contours10.png" width="13%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Gates.Contours11.png" width="13%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Gates.Contours12.png" width="13%">
 </p>
 
 Trait analysis is my algorithm to convert contour data into a `GateTraits` enum. The enum is defined as follows:
@@ -194,10 +194,10 @@ For example, with an Xor bar, we follow the following steps:
 We then get the following modified contour data:
 
 <p align="center">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Gates.Modified1.png" width="19%">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Gates.Modified3.png" width="19%">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Gates.Modified4.png" width="19%">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Gates.Modified6.png" width="19%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Gates.Modified1.png" width="19%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Gates.Modified3.png" width="19%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Gates.Modified4.png" width="19%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Gates.Modified6.png" width="19%">
 </p>
 
 *Any contour detected that still matches nothing useful is discarded at this point.*
@@ -206,19 +206,19 @@ We then get the following modified contour data:
 
 #### 1) Convert blurred document mask to HSV and InRange on the wires's expected color
 <p align="center">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Document.Wire Mask0.png" width="50%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Document.Wire Mask0.png" width="50%">
 </p>
 
 #### 2) Find the wire contours
 <p align="center">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/Document.Wire Contours0.png" width="50%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/Document.Wire Contours0.png" width="50%">
 </p>
 
 #### 3) Approximate the wire contours to a polygon to minimize the amount of unneccessary points
 
 Once that step is complete, we now have completed the OpenCv detection layer. Here is a debugging output of our current state:
 <p align="center">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/outCv.png" width="60%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/outCv.png" width="60%">
 </p>
 
 ## 3) Wireform Conversion
@@ -244,7 +244,7 @@ If one is found, snap it to the pin and register the connection!
 You can see the resulting output below:
 
 <p align="center">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/outWireform.png" width="60%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/outWireform.png" width="60%">
 </p>
 
 Green +'s are inputs. Green diamonds are outputs. Yellow +'s are connections.
@@ -259,6 +259,6 @@ Then, we can invert the perspective transformation matrix we originally used to 
 Our process is complete!
 
 <p align="center">
-  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/media/images/out.png" width="80%">
+  <img src="https://github.com/RyanAlameddine/WireFormSketch/raw/resources/images/out.png" width="80%">
 </p>
 
