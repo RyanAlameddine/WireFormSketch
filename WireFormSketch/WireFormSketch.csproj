@@ -19,7 +19,10 @@
     <PackageReference Include="Emgu.CV.runtime.windows" Version="4.5.2.4673" />
     <PackageReference Include="Emgu.CV.UI" Version="4.5.2.4673" />
     <PackageReference Include="OneOf" Version="3.0.190" />
-    <PackageReference Include="Wireform" Version="1.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WireForm\WireForm\WireForm.csproj" />
   </ItemGroup>
 
 </Project>
